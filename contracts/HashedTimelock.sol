@@ -30,7 +30,7 @@ contract HashedTimelock {
         bool refunded;
     }
 
-    modifier depositNonZero() {
+    modifier fundsSent() {
         require(msg.value > 0);
         _;
     }
@@ -68,7 +68,7 @@ contract HashedTimelock {
     function newContract(address _receiver, bytes32 _hashlock, uint _timelock)
         external
         payable
-        depositNonZero()
+        fundsSent
         returns (bytes32 contractId)
     {
         contractId = sha256(msg.sender, _receiver, msg.value, _hashlock, _timelock);
@@ -126,6 +126,29 @@ contract HashedTimelock {
         c.refunded = true;
         c.sender.transfer(c.amount);
         return true;
+    }
+
+    /**
+     * Get contract details.
+     *
+     * @param _contractId Return details of this contract
+     */
+    function getContract(bytes32 _contractId)
+        constant
+        contractExists(_contractId)
+        returns (
+            address sender,
+            address receiver,
+            uint amount,
+            bytes32 hashlock,
+            uint timelock,
+            bool withdrawn,
+            bool refunded
+        )
+    {
+        LockContract storage c = contracts[_contractId];
+        return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
+                c.withdrawn, c.refunded);
     }
 
     function haveContract(bytes32 _contractId)
