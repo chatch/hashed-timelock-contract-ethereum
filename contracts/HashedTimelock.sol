@@ -19,14 +19,13 @@ contract HashedTimelock {
     event LogNewContract(bytes32 contractId);
     event LogContractPayed(bytes32 contractId);
     event LogContractRefunded(bytes32 contractId);
-    event LogNow(uint now);
 
     struct LockContract {
         address sender;
         address receiver;
         uint amount;
         bytes32 hashlock;
-        uint timelock; // locked UNTIL this time
+        uint timelock; // UNIX timestamp seconds - locked UNTIL this time
         bool withdrawn;
         bool refunded;
     }
@@ -37,8 +36,8 @@ contract HashedTimelock {
     }
     modifier futureTimelock(uint _time) {
         // only requirement is the timelock time is after the last blocktime (now).
-        // probably want something a bit further in the future then this
-        // is still a useful sanity check
+        // probably want something a bit further in the future then this.
+        // but this is still a useful sanity check:
         require(_time > now);
         _;
     }
@@ -59,7 +58,7 @@ contract HashedTimelock {
         require(contracts[_contractId].sender == msg.sender);
         require(contracts[_contractId].refunded == false);
         require(contracts[_contractId].withdrawn == false);
-        require(contracts[_contractId].timelock < now);
+        require(contracts[_contractId].timelock <= now);
         _;
     }
 
@@ -80,7 +79,6 @@ contract HashedTimelock {
         futureTimelock(_timelock)
         returns (bytes32 contractId)
     {
-        LogNow(now);
         contractId = sha256(msg.sender, _receiver, msg.value, _hashlock, _timelock);
         // Reject if a contract already exists with the same parameters. The
         // sender must change one of these parameters (ideally providing a
