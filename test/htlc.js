@@ -13,7 +13,11 @@ const timeLock1Hour = nowSeconds() + hourSeconds
 //  - hex string representation
 //  - prefixed with 0x
 const bufToStr = b => '0x' + b.toString('hex')
-const sha256 = x => crypto.createHash('sha256').update(x).digest()
+const sha256 = x =>
+  crypto
+    .createHash('sha256')
+    .update(x)
+    .digest()
 const random32 = () => crypto.randomBytes(32)
 
 const isSha256Hash = hashStr => /^0x[0-9a-f]{64}$/i.test(hashStr)
@@ -188,7 +192,7 @@ contract('HashedTimelock', accounts => {
         })
         .then(newContractTx => {
           const contractId = txRetVal(newContractTx)
-          const someGuy = accounts[9]
+          const someGuy = accounts[4]
           htlc
             .withdraw(contractId, hashPair.secret, {from: someGuy})
             .then(tx => assert.fail('expected failure due to wrong receiver'))
@@ -244,8 +248,8 @@ contract('HashedTimelock', accounts => {
             // let's just create another htlc between other accounts and ignore
             // the result
             htlc
-              .newContract(accounts[8], bufToStr(random32()), timeLock1Hour, {
-                from: accounts[9],
+              .newContract(accounts[3], bufToStr(random32()), timeLock1Hour, {
+                from: accounts[4],
                 value: oneFinney,
               })
               .then(() => {
