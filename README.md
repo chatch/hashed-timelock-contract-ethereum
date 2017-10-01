@@ -4,11 +4,14 @@ An implementation of a Hashed Timelock Contract on Ethereum.
 Use this contract for creating locks on the ETH side of a cross chain atomic swap.
 
 ## Addresses
-Ropsten: [0x661335475ca4697da9e8827cbb859834911a040b](https://ropsten.etherscan.io/address/0x661335475ca4697da9e8827cbb859834911a040b)
 
-Rinkeby: [0x94Ac65c50B4B0618BC0cA7D374382F6C9e14D20F](https://rinkeby.etherscan.io/address/0x94Ac65c50B4B0618BC0cA7D374382F6C9e14D20F)
+Rinkeby: [0x12b3432188978a31f6e9a30a0de304b1a8f78722](https://rinkeby.etherscan.io/address/0x12b3432188978a31f6e9a30a0de304b1a8f78722)
 
 Mainnet: <not deployed yet ...>
+
+## ABI and Bytecode
+
+see [HashedTimelock.json](https://github.com/chatch/hashed-timelock-contract-ethereum/blob/master/build/contracts/HashedTimelock.json)
 
 ## Protocol
 

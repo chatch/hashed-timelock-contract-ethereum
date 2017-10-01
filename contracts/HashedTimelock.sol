@@ -16,9 +16,16 @@ pragma solidity ^0.4.15;
  *      the time lock has expired.
  */
 contract HashedTimelock {
-    event LogNewContract(bytes32 contractId);
-    event LogContractPayed(bytes32 contractId);
-    event LogContractRefunded(bytes32 contractId);
+    event LogNewContract(
+        bytes32 indexed contractId,
+        address indexed sender,
+        address indexed receiver,
+        uint amount,
+        bytes32 hashlock,
+        uint timelock
+    );
+    event LogContractPayed(bytes32 indexed contractId);
+    event LogContractRefunded(bytes32 indexed contractId);
 
     struct LockContract {
         address sender;
@@ -52,6 +59,7 @@ contract HashedTimelock {
     modifier withdrawable(bytes32 _contractId) {
         require(contracts[_contractId].receiver == msg.sender);
         require(contracts[_contractId].withdrawn == false);
+        require(contracts[_contractId].timelock > now);
         _;
     }
     modifier refundable(bytes32 _contractId) {
@@ -80,10 +88,13 @@ contract HashedTimelock {
         returns (bytes32 contractId)
     {
         contractId = sha256(msg.sender, _receiver, msg.value, _hashlock, _timelock);
+
         // Reject if a contract already exists with the same parameters. The
         // sender must change one of these parameters (ideally providing a
         // different _hashlock).
-        require(haveContract(contractId) == false);
+
+        if (haveContract(contractId))
+            revert();
 
         contracts[contractId] = LockContract(
             msg.sender,
@@ -95,7 +106,14 @@ contract HashedTimelock {
             false
         );
 
-        LogNewContract(contractId);
+        LogNewContract(
+            contractId,
+            msg.sender,
+            _receiver,
+            msg.value,
+            _hashlock,
+            _timelock
+        );
     }
 
     /**
