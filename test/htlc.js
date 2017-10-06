@@ -40,7 +40,7 @@ contract('HashedTimelock', accounts => {
   const sender = accounts[1]
   const receiver = accounts[2]
 
-  it('should create new contract and store correct details', done => {
+  it('newContract() should create new contract and store correct details', done => {
     const hashPair = newSecretHashPair()
     HashedTimelock.deployed().then(htlc =>
       htlc
@@ -75,7 +75,63 @@ contract('HashedTimelock', accounts => {
     )
   })
 
-  it('should let receiver withdraw with the secret preimage', done => {
+  it('newContract() should fail when no ETH sent', done => {
+    const hashPair = newSecretHashPair()
+    HashedTimelock.deployed()
+      .then(htlc =>
+        htlc.newContract(receiver, hashPair.hash, timeLock1Hour, {
+          from: sender,
+          value: 0,
+        })
+      )
+      .then(() => assert.fail('expected failure due to 0 value transferred'))
+      .catch(err => {
+        assert.equal(REQUIRE_FAILED_MSG, err.message)
+        done()
+      })
+  })
+
+  it('newContract() should fail with timelocks in the past', done => {
+    const hashPair = newSecretHashPair()
+    const pastTimelock = nowSeconds() - 1
+    HashedTimelock.deployed()
+      .then(htlc =>
+        htlc.newContract(receiver, hashPair.hash, pastTimelock, {
+          from: sender,
+          value: oneFinney,
+        })
+      )
+      .then(() => assert.fail('expected failure due past timelock'))
+      .catch(err => {
+        assert.equal(REQUIRE_FAILED_MSG, err.message)
+        done()
+      })
+  })
+
+  it('newContract() should reject a duplicate contract request', done => {
+    const hashPair = newSecretHashPair()
+    HashedTimelock.deployed().then(htlc =>
+      htlc
+        .newContract(receiver, hashPair.hash, timeLock1Hour, {
+          from: sender,
+          value: oneFinney,
+        })
+        .then(() =>
+          // now call again with the exact same parameters
+          htlc.newContract(receiver, hashPair.hash, timeLock1Hour, {
+            from: sender,
+            value: oneFinney,
+          })
+        )
+        .then(() => assert.fail('expected failure due to duplicate request'))
+        .catch(err => {
+          assert.equal(REQUIRE_FAILED_MSG, err.message)
+          done()
+        })
+    )
+  })
+
+  it('withdraw() should send receiver funds when given the correct secret preimage', done => {
     const hashPair = newSecretHashPair()
     HashedTimelock.deployed().then(htlc =>
       htlc
@@ -110,7 +166,101 @@ contract('HashedTimelock', accounts => {
     )
   })
 
-  it('should allow refund after the timelock has expired', done => {
+  it('withdraw() should fail if preimage does not hash to hashX', done => {
+    const hashPair = newSecretHashPair()
+    HashedTimelock.deployed().then(htlc =>
+      htlc
+        .newContract(receiver, hashPair.hash, timeLock1Hour, {
+          from: sender,
+          value: oneFinney,
+        })
+        .then(newContractTx => {
+          const contractId = txContractId(newContractTx)
+
+          // receiver calls withdraw with an invalid secret
+          const wrongSecret = bufToStr(random32())
+          htlc
+            .withdraw(contractId, wrongSecret, {from: receiver})
+            .then(() =>
+              assert.fail('expected failure due to 0 value transferred')
+            )
+            .catch(err => {
+              assert.equal(REQUIRE_FAILED_MSG, err.message)
+              done()
+            })
+        })
+    )
+  })
+
+  it('withdraw() should fail if caller is not the receiver ', done => {
+    const hashPair = newSecretHashPair()
+    HashedTimelock.deployed().then(htlc =>
+      htlc
+        .newContract(receiver, hashPair.hash, timeLock1Hour, {
+          from: sender,
+          value: oneFinney,
+        })
+        .then(newContractTx => {
+          const contractId = txContractId(newContractTx)
+          const someGuy = accounts[4]
+          htlc
+            .withdraw(contractId, hashPair.secret, {from: someGuy})
+            .then(() => assert.fail('expected failure due to wrong receiver'))
+            .catch(err => {
+              assert.equal(REQUIRE_FAILED_MSG, err.message)
+              done()
+            })
+        })
+    )
+  })
+
+  it('withdraw() should fail after timelock expiry', done => {
+    const hashPair = newSecretHashPair()
+    HashedTimelock.deployed().then(htlc => {
+      const curBlkTime = web3.eth.getBlock('latest').timestamp
+      const timelock1Second = curBlkTime + 1
+
+      htlc
+        .newContract(receiver, hashPair.hash, timelock1Second, {
+          from: sender,
+          value: oneFinney,
+        })
+        .then(newContractTx => {
+          const contractId = txContractId(newContractTx)
+
+          // wait one second so we move past the timelock time
+          setTimeout(() => {
+            // send an unrelated transaction to move the Solidity 'now' value
+            // (which equals the time of most recent block) past the locktime.
+
+            // NOTE: this tx could be anything just to get a block mined; but
+            // let's just create another htlc between other accounts and ignore
+            // the result
+            htlc
+              .newContract(accounts[3], bufToStr(random32()), timeLock1Hour, {
+                from: accounts[4],
+                value: oneFinney,
+              })
+              .then(() => {
+                // attempt to withdraw and check that it is not allowed
+                htlc
+                  .withdraw(contractId, hashPair.secret, {from: receiver})
+                  .then(() =>
+                    assert.fail(
+                      'expected failure due to withdraw after timelock expired'
+                    )
+                  )
+                  .catch(err => {
+                    assert.equal(REQUIRE_FAILED_MSG, err.message)
+                    done()
+                  })
+              })
+          }, 1000)
+        })
+    })
+  })
+
+  it('refund() should pass after timelock expiry', done => {
     const hashPair = newSecretHashPair()
     HashedTimelock.deployed().then(htlc => {
       const curBlkTime = web3.eth.getBlock('latest').timestamp
@@ -158,163 +308,15 @@ contract('HashedTimelock', accounts => {
                     assert.isFalse(contract[5]) // withdrawn still false
                     done()
                   })
+                  .catch(err => console.error(`caught error: ${err.message}`))
               })
-          }, 1000)
+              .catch(err => console.error(`caught error 2: ${err.message}`))
+          }, 2000)
         })
     })
   })
 
-  it('should reject new contract request when no ETH sent', done => {
-    const hashPair = newSecretHashPair()
-    HashedTimelock.deployed()
-      .then(htlc =>
-        htlc.newContract(receiver, hashPair.hash, timeLock1Hour, {
-          from: sender,
-          value: 0,
-        })
-      )
-      .then(tx => assert.fail('expected failure due to 0 value transferred'))
-      .catch(err => {
-        assert.equal(REQUIRE_FAILED_MSG, err.message)
-        done()
-      })
-  })
-
-  it('should reject timelocks in the past', done => {
-    const hashPair = newSecretHashPair()
-    const pastTimelock = nowSeconds() - 1
-    HashedTimelock.deployed()
-      .then(htlc =>
-        htlc.newContract(receiver, hashPair.hash, pastTimelock, {
-          from: sender,
-          value: oneFinney,
-        })
-      )
-      .then(tx => assert.fail('expected failure due past timelock'))
-      .catch(err => {
-        assert.equal(REQUIRE_FAILED_MSG, err.message)
-        done()
-      })
-  })
-
-  it('should reject a duplicate contract request', done => {
-    const hashPair = newSecretHashPair()
-    HashedTimelock.deployed().then(htlc =>
-      htlc
-        .newContract(receiver, hashPair.hash, timeLock1Hour, {
-          from: sender,
-          value: oneFinney,
-        })
-        .then(tx =>
-          // now call again with the exact same parameters
-          htlc.newContract(receiver, hashPair.hash, timeLock1Hour, {
-            from: sender,
-            value: oneFinney,
-          })
-        )
-        .then(tx => assert.fail('expected failure due to duplicate request'))
-        .catch(err => {
-          assert.equal(REQUIRE_FAILED_MSG, err.message)
-          done()
-        })
-    )
-  })
-
-  it('should reject withdraw from the receiver with the wrong preimage', done => {
-    const hashPair = newSecretHashPair()
-    HashedTimelock.deployed().then(htlc =>
-      htlc
-        .newContract(receiver, hashPair.hash, timeLock1Hour, {
-          from: sender,
-          value: oneFinney,
-        })
-        .then(newContractTx => {
-          const contractId = txContractId(newContractTx)
-
-          // receiver calls withdraw with an invalid secret
-          const wrongSecret = bufToStr(random32())
-          htlc
-            .withdraw(contractId, wrongSecret, {from: receiver})
-            .then(tx =>
-              assert.fail('expected failure due to 0 value transferred')
-            )
-            .catch(err => {
-              assert.equal(REQUIRE_FAILED_MSG, err.message)
-              done()
-            })
-        })
-    )
-  })
-
-  it('should reject withdraw from somebody other then the receiver', done => {
-    const hashPair = newSecretHashPair()
-    HashedTimelock.deployed().then(htlc =>
-      htlc
-        .newContract(receiver, hashPair.hash, timeLock1Hour, {
-          from: sender,
-          value: oneFinney,
-        })
-        .then(newContractTx => {
-          const contractId = txContractId(newContractTx)
-          const someGuy = accounts[4]
-          htlc
-            .withdraw(contractId, hashPair.secret, {from: someGuy})
-            .then(tx => assert.fail('expected failure due to wrong receiver'))
-            .catch(err => {
-              assert.equal(REQUIRE_FAILED_MSG, err.message)
-              done()
-            })
-        })
-    )
-  })
-
-  it('should reject withdraw after timelock expiry', done => {
-    const hashPair = newSecretHashPair()
-    HashedTimelock.deployed().then(htlc => {
-      const curBlkTime = web3.eth.getBlock('latest').timestamp
-      const timelock1Second = curBlkTime + 1
-
-      htlc
-        .newContract(receiver, hashPair.hash, timelock1Second, {
-          from: sender,
-          value: oneFinney,
-        })
-        .then(newContractTx => {
-          const contractId = txContractId(newContractTx)
-
-          // wait one second so we move past the timelock time
-          setTimeout(() => {
-            // send an unrelated transaction to move the Solidity 'now' value
-            // (which equals the time of most recent block) past the locktime.
-
-            // NOTE: this tx could be anything just to get a block mined; but
-            // let's just create another htlc between other accounts and ignore
-            // the result
-            htlc
-              .newContract(accounts[3], bufToStr(random32()), timeLock1Hour, {
-                from: accounts[4],
-                value: oneFinney,
-              })
-              .then(() => {
-                // attempt to withdraw and check that it is not allowed
-                htlc
-                  .withdraw(contractId, hashPair.secret, {from: receiver})
-                  .then(tx =>
-                    assert.fail(
-                      'expected failure due to withdraw after timelock expired'
-                    )
-                  )
-                  .catch(err => {
-                    assert.equal(REQUIRE_FAILED_MSG, err.message)
-                    done()
-                  })
-              })
-          }, 1000)
-        })
-    })
-  })
-
-  it('should reject refund from sender before the timelock expires', done => {
+  it('refund() should fail before the timelock expiry', done => {
     const hashPair = newSecretHashPair()
     HashedTimelock.deployed().then(htlc =>
       htlc
@@ -326,12 +328,19 @@ contract('HashedTimelock', accounts => {
           const contractId = txContractId(newContractTx)
           htlc
             .refund(contractId, {from: sender})
-            .then(tx => assert.fail('expected failure due to timelock'))
+            .then(() => assert.fail('expected failure due to timelock'))
             .catch(err => {
               assert.equal(REQUIRE_FAILED_MSG, err.message)
               done()
             })
         })
     )
+  })
+
+  it("getContract() returns empty record when contract doesn't exist", async () => {
+    const htlc = await HashedTimelock.deployed()
+    const contract = await htlc.getContract.call('0xabcdef')
+    const sender = contract[0]
+    assert.equal(Number(sender), 0)
   })
 })

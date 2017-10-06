@@ -163,7 +163,6 @@ contract HashedTimelock {
      */
     function getContract(bytes32 _contractId)
         constant
-        contractExists(_contractId)
         returns (
             address sender,
             address receiver,
@@ -174,6 +173,8 @@ contract HashedTimelock {
             bool refunded
         )
     {
+        if (haveContract(_contractId) == false)
+            return;
         LockContract storage c = contracts[_contractId];
         return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
                 c.withdrawn, c.refunded);

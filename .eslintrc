@@ -7,6 +7,18 @@
     }
   },
   "env": {
-    "node": true
+    "node": true,
+    "mocha": true
+  },
+  "globals": {
+    // truffle test framework provided:
+    "web3": true,
+    "contract": true,
+    "artifacts": true,
+    "assert": true
+  },
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": ["warn"]
   }
 }
