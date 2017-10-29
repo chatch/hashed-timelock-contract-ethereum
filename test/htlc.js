@@ -36,6 +36,19 @@ const txLoggedArgs = txReceipt => txReceipt.logs[0].args
 const txContractId = txReceipt => txLoggedArgs(txReceipt).contractId
 const oneFinney = web3.toWei(1, 'finney')
 
+const contractArrToObj = c => {
+  return {
+    sender: c[0],
+    receiver: c[1],
+    amount: c[2],
+    hashlock: c[3],
+    timelock: c[4],
+    withdrawn: c[5],
+    refunded: c[6],
+    preimage: c[7],
+  }
+}
+
 contract('HashedTimelock', accounts => {
   const sender = accounts[1]
   const receiver = accounts[2]
@@ -62,14 +75,19 @@ contract('HashedTimelock', accounts => {
 
           return htlc.getContract.call(contractId)
         })
-        .then(contract => {
-          assert.equal(contract[0], sender)
-          assert.equal(contract[1], receiver)
-          assert.equal(contract[2], oneFinney)
-          assert.equal(contract[3], hashPair.hash)
-          assert.equal(contract[4].toNumber(), timeLock1Hour)
-          assert.isFalse(contract[5])
-          assert.isFalse(contract[6])
+        .then(contractArr => {
+          const contract = contractArrToObj(contractArr)
+          assert.equal(contract.sender, sender)
+          assert.equal(contract.receiver, receiver)
+          assert.equal(contract.amount, oneFinney)
+          assert.equal(contract.hashlock, hashPair.hash)
+          assert.equal(contract.timelock.toNumber(), timeLock1Hour)
+          assert.isFalse(contract.withdrawn)
+          assert.isFalse(contract.refunded)
+          assert.equal(
+            contract.preimage,
+            '0x0000000000000000000000000000000000000000000000000000000000000000'
+          )
           done()
         })
     )
@@ -86,7 +104,7 @@ contract('HashedTimelock', accounts => {
       )
       .then(() => assert.fail('expected failure due to 0 value transferred'))
       .catch(err => {
-        assert.equal(REQUIRE_FAILED_MSG, err.message)
+        assert.equal(err.message, REQUIRE_FAILED_MSG)
         done()
       })
   })
@@ -103,7 +121,7 @@ contract('HashedTimelock', accounts => {
       )
       .then(() => assert.fail('expected failure due past timelock'))
       .catch(err => {
-        assert.equal(REQUIRE_FAILED_MSG, err.message)
+        assert.equal(err.message, REQUIRE_FAILED_MSG)
         done()
       })
   })
@@ -125,7 +143,7 @@ contract('HashedTimelock', accounts => {
         )
         .then(() => assert.fail('expected failure due to duplicate request'))
         .catch(err => {
-          assert.equal(REQUIRE_FAILED_MSG, err.message)
+          assert.equal(err.message, REQUIRE_FAILED_MSG)
           done()
         })
     )
@@ -157,9 +175,11 @@ contract('HashedTimelock', accounts => {
               )
               return htlc.getContract.call(contractId)
             })
-            .then(contract => {
-              assert.isTrue(contract[5]) // withdrawn set
-              assert.isFalse(contract[6]) // refunded still false
+            .then(contractArr => {
+              const contract = contractArrToObj(contractArr)
+              assert.isTrue(contract.withdrawn) // withdrawn set
+              assert.isFalse(contract.refunded) // refunded still false
+              assert.equal(contract.preimage, hashPair.secret)
               done()
             })
         })
@@ -185,7 +205,7 @@ contract('HashedTimelock', accounts => {
               assert.fail('expected failure due to 0 value transferred')
             )
             .catch(err => {
-              assert.equal(REQUIRE_FAILED_MSG, err.message)
+              assert.equal(err.message, REQUIRE_FAILED_MSG)
               done()
             })
         })
@@ -207,7 +227,7 @@ contract('HashedTimelock', accounts => {
             .withdraw(contractId, hashPair.secret, {from: someGuy})
             .then(() => assert.fail('expected failure due to wrong receiver'))
             .catch(err => {
-              assert.equal(REQUIRE_FAILED_MSG, err.message)
+              assert.equal(err.message, REQUIRE_FAILED_MSG)
               done()
             })
         })
@@ -251,7 +271,7 @@ contract('HashedTimelock', accounts => {
                     )
                   )
                   .catch(err => {
-                    assert.equal(REQUIRE_FAILED_MSG, err.message)
+                    assert.equal(err.message, REQUIRE_FAILED_MSG)
                     done()
                   })
               })
@@ -330,7 +350,7 @@ contract('HashedTimelock', accounts => {
             .refund(contractId, {from: sender})
             .then(() => assert.fail('expected failure due to timelock'))
             .catch(err => {
-              assert.equal(REQUIRE_FAILED_MSG, err.message)
+              assert.equal(err.message, REQUIRE_FAILED_MSG)
               done()
             })
         })

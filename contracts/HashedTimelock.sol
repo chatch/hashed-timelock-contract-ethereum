@@ -35,6 +35,7 @@ contract HashedTimelock {
         uint timelock; // UNIX timestamp seconds - locked UNTIL this time
         bool withdrawn;
         bool refunded;
+        bytes32 preimage;
     }
 
     modifier fundsSent() {
@@ -103,7 +104,8 @@ contract HashedTimelock {
             _hashlock,
             _timelock,
             false,
-            false
+            false,
+            0x0
         );
 
         LogNewContract(
@@ -121,16 +123,17 @@ contract HashedTimelock {
      * the locked funds to their address..
      *
      * @param _contractId Id of contract to withdraw from.
-     * @param _preImage sha256(_preImage) should equal the contract hashlock
+     * @param _preimage sha256(_preimage) should equal the contract hashlock
      */
-    function withdraw(bytes32 _contractId, bytes32 _preImage)
+    function withdraw(bytes32 _contractId, bytes32 _preimage)
         external
         contractExists(_contractId)
         withdrawable(_contractId)
-        hashlockMatches(_contractId, _preImage)
+        hashlockMatches(_contractId, _preimage)
         returns (bool)
     {
         LockContract storage c = contracts[_contractId];
+        c.preimage = _preimage;
         c.withdrawn = true;
         c.receiver.transfer(c.amount);
         LogContractPayed(_contractId);
@@ -170,14 +173,15 @@ contract HashedTimelock {
             bytes32 hashlock,
             uint timelock,
             bool withdrawn,
-            bool refunded
+            bool refunded,
+            bytes32 preimage
         )
     {
         if (haveContract(_contractId) == false)
             return;
         LockContract storage c = contracts[_contractId];
         return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
-                c.withdrawn, c.refunded);
+                c.withdrawn, c.refunded, c.preimage);
     }
 
     function haveContract(bytes32 _contractId)
