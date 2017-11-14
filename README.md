@@ -5,6 +5,7 @@ Use this contract for creating locks on the ETH side of a cross chain atomic swa
 
 ## Addresses
 
+Ropsten: [0x131c7BA3eC8eBE69a6c58D084FD70aDFaCEC76c5](https://ropsten.etherscan.io/address/0x131c7BA3eC8eBE69a6c58D084FD70aDFaCEC76c5)
 Rinkeby: [0x12b3432188978a31f6e9a30a0de304b1a8f78722](https://rinkeby.etherscan.io/address/0x12b3432188978a31f6e9a30a0de304b1a8f78722)
 
 Mainnet: <not deployed yet ...>
