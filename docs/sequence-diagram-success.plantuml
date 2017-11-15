@@ -1,0 +1,42 @@
+@startuml
+skinparam BoxPadding 20
+
+legend top
+HashedTimelock contract: normal flow - receiver withdraws with preimage before the timelock expires
+end legend
+
+box "Ethereum Network" #A9C5E6
+participant Sender as sender << Account >>
+participant Receiver as receiver << Account >>
+participant HashedTimelock as htlc << Smart Contract >>
+participant Events as events
+end box
+
+note left of htlc
+State stored for each HTLC:
+  address sender;
+  address receiver;
+  uint amount;
+  bytes32 hashlock;
+  uint timelock; // UNIX ts
+  bool withdrawn;
+  bool refunded;
+  bytes32 preimage;
+end note
+
+activate htlc
+sender->htlc:newContract(receiver, hashlock, timelock) => ETH amount
+htlc->events:LogNewContract(contractId, locks, values, etc.)
+htlc->sender:contractId
+deactivate htlc
+
+sender->receiver:reveals contractId
+receiver->receiver:knows/obtains secret preimage\n[sha256(secret preimage) == hashlock]
+
+activate htlc
+receiver->htlc:withdraw(contractId, secret preimage)
+htlc->events:LogWithdrawal(contractId)
+htlc->receiver:ETH amount <=
+deactivate htlc
+
+@enduml
