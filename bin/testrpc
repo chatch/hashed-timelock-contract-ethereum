@@ -1,0 +1,34 @@
+#!/bin/sh
+
+PHRASE="end staff push admit delay abandon ability nurse renew alert stomach jazz"
+
+#   Produces these accounts and keys every run:
+#
+#   Available Accounts
+#   ==================
+#   (0) 0xf1a78016d18ec03db2bc01dbfa9573f1719cd3c6
+#   (1) 0x0328b2f0a499ba13b11cad797f7c4a0813afad0b
+#   (2) 0x24d847cb500521ed9e3172cbc6fddb4802d84884
+#   (3) 0xe51a663c7ad327e2f6cd2c5aa437b52026defccf
+#   (4) 0xe2e1489c13686fa818515ca05647c3cadb08d8bc
+#   (5) 0x4a9856a6a63ff7c5ab854d3ee679fa0f6fbad449
+#   (6) 0xb931996df432cfa36ed7d04fc1f403d3f950c4af
+#   (7) 0xe8a944a09629cffb09f8696acb39b256b5c125db
+#   (8) 0x641a6c4fea8cd97b73058d5ed2bb289bd73b3b5c
+#   (9) 0xd67a55ac66c9eea44d1e495a1ddd701917ad6ad7
+#   
+#   Private Keys
+#   ==================
+#   (0) 9926c3405fc4f6c7f721b7efeaae252da755e535fad910eddbb8ac57c50b3737
+#   (1) 0fb3c646794331d70cb2f610d796692918f6069da9ac1f70919b2e6f5b6717e4
+#   (2) 8d50121eef22f67f3c691b7c31c9f54693d6611c4c52f4e78aebb95ba5417862
+#   (3) 21f1a44234756a5e623ec64668e837decff279d25b8af9df3ed287ff482e3af7
+#   (4) 30fd90caf84699a45d88808f2a7a240f9c11dfcd78e5c096a6e393802906642b
+#   (5) 1066e47ece77699759d923c457000e0bb9c7bcbf6ee9b9265a1e6bfef0ea4c26
+#   (6) 074918f6020f681712bfcd4f3fed74239264bda8ec2f513626e2fb19feb7eb17
+#   (7) 5d576693f9a88351a6d4a543612652b470da48f6813b0c1d73c02c34e89cc092
+#   (8) a0106e68a85e1d2bcd27afc4071887a9ecf38b556fab1eeac297a46cdb8b6abc
+#   (9) 1a5ce94c3fe225323760fed87548c7d7057c72a0542a83c29d013a605010d39d
+#   
+
+docker run --rm -it -p 8545:8545 chatch/ethereumjs-testrpc:4.1.3 -m "$PHRASE" $@

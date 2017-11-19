@@ -1,1 +1,2 @@
-build/contracts/Migrations.json
+build/
+node_modules/

@@ -1,0 +1,39 @@
+{
+  "name": "hashed-timelock-contract-ethereum",
+  "version": "0.0.2",
+  "description": "Hash Time Lock Contracts for Ethereum",
+  "main": "truffle.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "testrpc": "bin/testrpc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chatch/hashed-timelock-contract-ethereum.git"
+  },
+  "keywords": [
+    "ethereum",
+    "hashed-timelock-contract",
+    "solidity",
+    "smart-contract"
+  ],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/chatch/hashed-timelock-contract-ethereum/issues"
+  },
+  "homepage": "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "zeppelin-solidity": "^1.3.0"
+  },
+  "devDependencies": {
+    "bluebird": "^3.5.1"
+  }
+}
