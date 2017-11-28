@@ -26,12 +26,13 @@ const newSecretHashPair = () => {
 }
 
 // fast forward 1 block by sending a useless transaction
-const fastForward = async web3 => {
+const fastForward = web3 => {
   web3.eth.sendTransactionAsync = Promise.promisify(web3.eth.sendTransaction)
-  await web3.eth.sendTransactionAsync({
+  return web3.eth.sendTransactionAsync({
     from: web3.eth.accounts[8],
     to: web3.eth.accounts[9],
-    value: 1,
+    value: web3.toBigNumber(1),
+    gasLimit: web3.toBigNumber(12300),
   })
 }
 
