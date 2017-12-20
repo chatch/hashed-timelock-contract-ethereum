@@ -13,7 +13,7 @@ const HashedTimelock = artifacts.require('./HashedTimelock.sol')
 
 // pre Metropolis failed require() gives invalid opcode
 const REQUIRE_FAILED_MSG =
-  'VM Exception while processing transaction: invalid opcode'
+  'VM Exception while processing transaction: revert'
 
 const hourSeconds = 3600
 const timeLock1Hour = nowSeconds() + hourSeconds
