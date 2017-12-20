@@ -44,5 +44,6 @@ htlc.getContract.call(contractId).then(contract => {
   assert.equal(contract[4].toNumber(), timeLock1Hour)
   assert.isFalse(contract[5]) // withdrawn flag
   assert.isFalse(contract[6]) // refunded flag
+  assert.equal(contract[7], preimage) // some preimage if it revealed already
 })
 ```

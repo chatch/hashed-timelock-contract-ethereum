@@ -8,6 +8,8 @@
     "test": "test"
   },
   "scripts": {
+    "publish-abi":
+      "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
     "test": "truffle test --network ci",
     "testrpc": "ganache-cli"
   },
