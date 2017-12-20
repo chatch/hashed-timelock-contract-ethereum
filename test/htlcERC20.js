@@ -4,7 +4,6 @@ import {
   newSecretHashPair,
   nowSeconds,
   random32,
-  fastForward,
   txContractId,
   txGas,
   txLoggedArgs,
@@ -38,26 +37,19 @@ const contractArrToObj = c => {
  * Helper for the newContract() should fail tests
  */
 const newContractExpectFailure = async (
+  shouldFailMsg,
   htlc,
   receiver,
   sender,
   tokenAddr,
   amount,
-  shouldFailMsg,
-  timelock = timeLock1Hour
+  timelock = timeLock1Hour,
+  hashlock = newSecretHashPair().hash
 ) => {
-  const hashPair = newSecretHashPair()
   try {
-    await htlc.newContract(
-      receiver,
-      hashPair.hash,
-      timelock,
-      tokenAddr,
-      amount,
-      {
-        from: sender,
-      }
-    )
+    await htlc.newContract(receiver, hashlock, timelock, tokenAddr, amount, {
+      from: sender,
+    })
     assert.fail(shouldFailMsg)
   } catch (err) {
     assert.equal(err.message, REQUIRE_FAILED_MSG)
@@ -70,20 +62,29 @@ contract('HashedTimelockERC20', accounts => {
   const tokenSupply = 1000
   const senderInitialBalance = 100
 
+  const assertTokenBal = async (addr, amount, msg) =>
+    assert.equal(
+      (await token.balanceOf.call(addr)).toNumber(),
+      amount,
+      msg ? msg : 'balance wrong'
+    )
+
   let htlc
   let token
 
-  beforeEach(async () => {
-    // create a new htlc each time round
+  before(async () => {
     htlc = await HashedTimelockERC20.new()
-    // create a new token contract with fresh balances each time round
     token = await ASEANToken.new(tokenSupply)
     await token.transfer(sender, senderInitialBalance)
-    assert.equal(await token.balanceOf(sender), senderInitialBalance)
+    assertTokenBal(
+      sender,
+      senderInitialBalance,
+      'balance not transferred in before()'
+    )
   })
 
   it('newContract() should create new contract and store correct details', async () => {
-    const amount = 10
+    const amount = 5
     const hashPair = newSecretHashPair()
 
     await token.approve(htlc.address, amount, {from: sender})
@@ -100,8 +101,8 @@ contract('HashedTimelockERC20', accounts => {
     )
 
     // check token balances
-    assert.equal(await token.balanceOf(sender), senderInitialBalance - amount)
-    assert.equal(await token.balanceOf(htlc.address), amount)
+    assertTokenBal(sender, senderInitialBalance - amount)
+    assertTokenBal(htlc.address, amount)
 
     // check event logs
     const logArgs = txLoggedArgs(receipt)
@@ -136,11 +137,12 @@ contract('HashedTimelockERC20', accounts => {
   it('newContract() should fail when no token transfer approved', async () => {
     const amount = 1
     await newContractExpectFailure(
+      'expected failure due to no tokens approved',
+      htlc,
       receiver,
       sender,
       token.address,
-      amount,
-      'expected failure due to no tokens approved'
+      amount
     )
   })
 
@@ -148,71 +150,81 @@ contract('HashedTimelockERC20', accounts => {
     // approve htlc for one token but send amount as 0
     await token.approve(htlc.address, 1, {from: sender})
     await newContractExpectFailure(
+      'expected failure due to 0 token amount',
+      htlc,
       receiver,
       sender,
       token.address,
-      0,
-      'expected failure due to 0 token amount'
+      0 // web3.toBigNumber(0)
     )
   })
 
   it('newContract() should fail when tokens approved for a different account', async () => {
     // approve htlc for different account to the htlc contract
     const amount = 1
+    await token.approve(htlc.address, 0, {from: sender})
     await token.approve(accounts[9], amount, {from: sender})
     await newContractExpectFailure(
+      'expected failure due to wrong approval',
+      htlc,
       receiver,
       sender,
       token.address,
-      amount,
-      'expected failure due to wrong approval'
+      amount
     )
   })
 
-  it('newContract() should fail when contract amount is 0', async () => {
+  it('newContract() should fail when the timelock is in the past', async () => {
     const amount = 1
-    const pastTimelock = nowSeconds() - 1
+    const pastTimelock = nowSeconds() - 2
     await token.approve(htlc.address, amount, {from: sender})
     await newContractExpectFailure(
+      'expected failure due to timelock in the past',
+      htlc,
       receiver,
       sender,
       token.address,
       amount,
-      'expected failure due to timelock in the past',
       pastTimelock
     )
   })
 
   it('newContract() should reject a duplicate contract request', async () => {
     const amount = 1
-    const hashPair = newSecretHashPair()
+    const hashlock = newSecretHashPair().hash
+    const timelock = timeLock1Hour + 5
 
+    const balBefore = await token.balanceOf(htlc.address)
     await token.approve(htlc.address, amount, {from: sender})
-
-    // check starting balance is 0
-    assert.equal(await token.balanceOf(htlc.address), 0)
 
     // create 1st contract
     await htlc.newContract(
       receiver,
-      hashPair.hash,
-      timeLock1Hour,
+      hashlock,
+      timelock,
       token.address,
       amount,
       {
         from: sender,
       }
     )
-    assert.equal(await token.balanceOf(htlc.address), amount)
+    assertTokenBal(
+      htlc.address,
+      balBefore.plus(amount),
+      'tokens transfered to htlc contract'
+    )
 
     // now attempt to create another with the exact same parameters
     await token.approve(htlc.address, amount, {from: sender})
     await newContractExpectFailure(
+      'expected failure due to duplicate contract details',
+      htlc,
       receiver,
       sender,
       token.address,
       amount,
-      'expected failure due to duplicate contract details'
+      timelock,
+      hashlock
     )
   })
 
