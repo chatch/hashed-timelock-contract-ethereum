@@ -25,17 +25,6 @@ const newSecretHashPair = () => {
   }
 }
 
-// fast forward 1 block by sending a useless transaction
-const fastForward = web3 => {
-  web3.eth.sendTransactionAsync = Promise.promisify(web3.eth.sendTransaction)
-  return web3.eth.sendTransactionAsync({
-    from: web3.eth.accounts[8],
-    to: web3.eth.accounts[9],
-    value: web3.toBigNumber(1),
-    gasLimit: web3.toBigNumber(12300),
-  })
-}
-
 const nowSeconds = () => Math.floor(Date.now() / 1000)
 
 const gasPrice = 100000000000 // truffle fixed gas price
@@ -45,7 +34,6 @@ const txContractId = txReceipt => txLoggedArgs(txReceipt).contractId
 
 export {
   bufToStr,
-  fastForward,
   isSha256Hash,
   newSecretHashPair,
   nowSeconds,

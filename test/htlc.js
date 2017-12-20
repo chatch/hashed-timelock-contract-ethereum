@@ -1,6 +1,5 @@
 import {
   bufToStr,
-  fastForward,
   isSha256Hash,
   newSecretHashPair,
   nowSeconds,
@@ -210,8 +209,7 @@ contract('HashedTimelock', accounts => {
   it('withdraw() should fail after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const htlc = await HashedTimelock.new()
-    const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock1Second = curBlkTime + 1
+    const timelock1Second = nowSeconds() + 1
 
     const newContractTx = await htlc.newContract(
       receiver,
@@ -226,10 +224,6 @@ contract('HashedTimelock', accounts => {
 
     // wait one second so we move past the timelock time
     setTimeout(async () => {
-      // send an unrelated transaction to move the Solidity 'now' value
-      // (which equals the time of most recent block) past the locktime.
-      await fastForward(web3)
-
       // attempt to withdraw and check that it is not allowed
       try {
         await htlc.withdraw(contractId, hashPair.secret, {from: receiver})
@@ -237,14 +231,13 @@ contract('HashedTimelock', accounts => {
       } catch (err) {
         assert.equal(err.message, REQUIRE_FAILED_MSG)
       }
-    }, 1001)
+    }, 2001)
   })
 
   it('refund() should pass after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const htlc = await HashedTimelock.new()
-    const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock1Second = curBlkTime + 1
+    const timelock1Second = nowSeconds() + 1
 
     const newContractTx = await htlc.newContract(
       receiver,
@@ -261,7 +254,6 @@ contract('HashedTimelock', accounts => {
     setTimeout(async () => {
       // send an unrelated transaction to move the Solidity 'now' value
       // (which equals the time of most recent block) past the locktime.
-      await fastForward(web3)
       // attempt to get the refund now we've moved past the timelock time
       const balBefore = web3.eth.getBalance(sender)
       const tx = await htlc.refund(contractId, {from: sender})
