@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 /**
  * @title Hash Time Lock Contracts.
@@ -165,7 +165,8 @@ contract HashedTimelock {
      * @param _contractId Return details of this contract
      */
     function getContract(bytes32 _contractId)
-        constant
+        public
+        view
         returns (
             address sender,
             address receiver,
@@ -186,6 +187,7 @@ contract HashedTimelock {
 
     function haveContract(bytes32 _contractId)
         internal
+        view
         returns (bool exists)
     {
         exists = (contracts[_contractId].sender != address(0));

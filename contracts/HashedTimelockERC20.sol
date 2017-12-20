@@ -1,9 +1,9 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import "zeppelin-solidity/contracts/token/ERC20.sol";
 
 /**
- * @title Hash Time Lock Contracts for Tokens.
+ * @title Hash Time Lock Contracts for Tokens (in progress ..)
  *
  * A contract that provides an implementation of Hashed Timelock Contracts for
  * ERC20 tokens.
@@ -190,7 +190,8 @@ contract HashedTimelockERC20 {
      * @param _contractId Return details of this contract
      */
     function getContract(bytes32 _contractId)
-        constant
+        public
+        view
         returns (
             address sender,
             address receiver,
@@ -221,6 +222,7 @@ contract HashedTimelockERC20 {
 
     function haveContract(bytes32 _contractId)
         internal
+        view
         returns (bool exists)
     {
         exists = (contracts[_contractId].sender != address(0));

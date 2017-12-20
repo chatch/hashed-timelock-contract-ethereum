@@ -8,8 +8,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test",
-    "testrpc": "bin/testrpc"
+    "test": "truffle test --network ci",
+    "testrpc": "ganache-cli"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
   "bugs": {
     "url": "https://github.com/chatch/hashed-timelock-contract-ethereum/issues"
   },
-  "homepage": "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
+  "homepage":
+    "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

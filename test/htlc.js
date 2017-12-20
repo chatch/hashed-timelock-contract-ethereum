@@ -1,3 +1,5 @@
+import Promise from 'bluebird'
+
 import {
   bufToStr,
   isSha256Hash,
@@ -11,9 +13,7 @@ import {
 
 const HashedTimelock = artifacts.require('./HashedTimelock.sol')
 
-// pre Metropolis failed require() gives invalid opcode
-const REQUIRE_FAILED_MSG =
-  'VM Exception while processing transaction: revert'
+const REQUIRE_FAILED_MSG = 'VM Exception while processing transaction: revert'
 
 const hourSeconds = 3600
 const timeLock1Hour = nowSeconds() + hourSeconds
@@ -223,15 +223,17 @@ contract('HashedTimelock', accounts => {
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    setTimeout(async () => {
-      // attempt to withdraw and check that it is not allowed
-      try {
-        await htlc.withdraw(contractId, hashPair.secret, {from: receiver})
-        assert.fail('expected failure due to withdraw after timelock expired')
-      } catch (err) {
-        assert.equal(err.message, REQUIRE_FAILED_MSG)
-      }
-    }, 2001)
+    return Promise.resolve(resolve =>
+      setTimeout(async () => {
+        // attempt to withdraw and check that it is not allowed
+        try {
+          await htlc.withdraw(contractId, hashPair.secret, {from: receiver})
+          assert.fail('expected failure due to withdraw after timelock expired')
+        } catch (err) {
+          assert.equal(err.message, REQUIRE_FAILED_MSG)
+        }
+      }, 2001)
+    )
   })
 
   it('refund() should pass after timelock expiry', async () => {

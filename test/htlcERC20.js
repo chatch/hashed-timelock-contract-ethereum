@@ -12,9 +12,7 @@ import {
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const ASEANToken = artifacts.require('./helper/ASEANToken.sol')
 
-// pre Metropolis failed require() gives invalid opcode
-const REQUIRE_FAILED_MSG =
-  'VM Exception while processing transaction: revert'
+const REQUIRE_FAILED_MSG = 'VM Exception while processing transaction: revert'
 
 const hourSeconds = 3600
 const timeLock1Hour = nowSeconds() + hourSeconds

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
@@ -10,8 +10,8 @@ contract ASEANToken is StandardToken {
     string public constant symbol = "ASEAN";
     uint8 public constant decimals = 18;
     
-    function ASEANToken(uint initialBalance) {
-        balances[msg.sender] = initialBalance;
-        totalSupply = initialBalance;
+    function ASEANToken(uint _initialBalance) public {
+        balances[msg.sender] = _initialBalance;
+        totalSupply = _initialBalance;
     }
 }
