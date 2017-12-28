@@ -2,6 +2,7 @@ import Promise from 'bluebird'
 
 import {
   bufToStr,
+  htlcArrayToObj,
   isSha256Hash,
   newSecretHashPair,
   nowSeconds,
@@ -18,19 +19,6 @@ const REQUIRE_FAILED_MSG = 'VM Exception while processing transaction: revert'
 const hourSeconds = 3600
 const timeLock1Hour = nowSeconds() + hourSeconds
 const oneFinney = web3.toWei(1, 'finney')
-
-const contractArrToObj = c => {
-  return {
-    sender: c[0],
-    receiver: c[1],
-    amount: c[2],
-    hashlock: c[3],
-    timelock: c[4],
-    withdrawn: c[5],
-    refunded: c[6],
-    preimage: c[7],
-  }
-}
 
 contract('HashedTimelock', accounts => {
   const sender = accounts[1]
@@ -60,7 +48,7 @@ contract('HashedTimelock', accounts => {
     assert.equal(logArgs.timelock, timeLock1Hour)
 
     const contractArr = await htlc.getContract.call(contractId)
-    const contract = contractArrToObj(contractArr)
+    const contract = htlcArrayToObj(contractArr)
     assert.equal(contract.sender, sender)
     assert.equal(contract.receiver, receiver)
     assert.equal(contract.amount, oneFinney)
@@ -154,7 +142,7 @@ contract('HashedTimelock', accounts => {
       "receiver balance doesn't match"
     )
     const contractArr = await htlc.getContract.call(contractId)
-    const contract = contractArrToObj(contractArr)
+    const contract = htlcArrayToObj(contractArr)
     assert.isTrue(contract.withdrawn) // withdrawn set
     assert.isFalse(contract.refunded) // refunded still false
     assert.equal(contract.preimage, hashPair.secret)
@@ -184,7 +172,7 @@ contract('HashedTimelock', accounts => {
     }
   })
 
-  it('withdraw() should fail if caller is not the receiver ', async () => {
+  it('withdraw() should fail if caller is not the receiver', async () => {
     const hashPair = newSecretHashPair()
     const htlc = await HashedTimelock.deployed()
     const newContractTx = await htlc.newContract(
@@ -223,17 +211,20 @@ contract('HashedTimelock', accounts => {
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    return Promise.resolve(resolve =>
+    return new Promise((resolve, reject) => {
       setTimeout(async () => {
         // attempt to withdraw and check that it is not allowed
         try {
           await htlc.withdraw(contractId, hashPair.secret, {from: receiver})
-          assert.fail('expected failure due to withdraw after timelock expired')
+          reject(
+            new Error('expected failure due to withdraw after timelock expired')
+          )
         } catch (err) {
           assert.equal(err.message, REQUIRE_FAILED_MSG)
+          resolve()
         }
-      }, 2001)
-    )
+      }, 1000)
+    })
   })
 
   it('refund() should pass after timelock expiry', async () => {
@@ -253,22 +244,26 @@ contract('HashedTimelock', accounts => {
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    setTimeout(async () => {
-      // send an unrelated transaction to move the Solidity 'now' value
-      // (which equals the time of most recent block) past the locktime.
-      // attempt to get the refund now we've moved past the timelock time
-      const balBefore = web3.eth.getBalance(sender)
-      const tx = await htlc.refund(contractId, {from: sender})
-      // Check contract funds are now at the senders address
-      const expectedBal = balBefore.plus(oneFinney).minus(txGas(tx))
-      assert(
-        web3.eth.getBalance(sender).equals(expectedBal),
-        "sender balance doesn't match"
-      )
-      const contract = await htlc.getContract.call(contractId)
-      assert.isTrue(contract[6]) // refunded set
-      assert.isFalse(contract[5]) // withdrawn still false
-    }, 2001)
+    return new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          const balBefore = web3.eth.getBalance(sender)
+          const tx = await htlc.refund(contractId, {from: sender})
+          // Check contract funds are now at the senders address
+          const expectedBal = balBefore.plus(oneFinney).minus(txGas(tx))
+          assert(
+            web3.eth.getBalance(sender).equals(expectedBal),
+            "sender balance doesn't match"
+          )
+          const contract = await htlc.getContract.call(contractId)
+          assert.isTrue(contract[6]) // refunded set
+          assert.isFalse(contract[5]) // withdrawn still false
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      }, 1000)
+    })
   })
 
   it('refund() should fail before the timelock expiry', async () => {

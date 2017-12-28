@@ -1,5 +1,4 @@
 const crypto = require('crypto')
-const Promise = require('bluebird')
 
 // Format required for sending bytes through eth client:
 //  - hex string representation
@@ -32,8 +31,22 @@ const txGas = txReceipt => txReceipt.receipt.gasUsed * gasPrice
 const txLoggedArgs = txReceipt => txReceipt.logs[0].args
 const txContractId = txReceipt => txLoggedArgs(txReceipt).contractId
 
+const htlcArrayToObj = c => {
+  return {
+    sender: c[0],
+    receiver: c[1],
+    amount: c[2],
+    hashlock: c[3],
+    timelock: c[4],
+    withdrawn: c[5],
+    refunded: c[6],
+    preimage: c[7],
+  }
+}
+
 export {
   bufToStr,
+  htlcArrayToObj,
   isSha256Hash,
   newSecretHashPair,
   nowSeconds,
