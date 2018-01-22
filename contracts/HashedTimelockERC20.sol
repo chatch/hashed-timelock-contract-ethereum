@@ -86,25 +86,25 @@ contract HashedTimelockERC20 {
      * @param _receiver Receiver of hash time locked funds
      * @param _hashlock Hash lock for which the reciever must provide the preimage for.
      * @param _timelock Refunds can be made after this time
-     * @param _token ERC20 Token contract address
+     * @param _tokenContract ERC20 Token contract address
      * @param _amount Amount of the token to lock up
      */
     function newContract(
         address _receiver,
         bytes32 _hashlock,
         uint _timelock,
-        address _token,
+        address _tokenContract,
         uint _amount
     )
         external
-        tokensTransferable(_token, msg.sender, _amount)
+        tokensTransferable(_tokenContract, msg.sender, _amount)
         futureTimelock(_timelock)
         returns (bytes32 contractId)
     {
         contractId = sha256(
             msg.sender,
             _receiver,
-            _token,
+            _tokenContract,
             _amount,
             _hashlock,
             _timelock
@@ -117,13 +117,13 @@ contract HashedTimelockERC20 {
             revert();
 
         // This contract becomes the temporary owner of the tokens
-        if (!ERC20(_token).transferFrom(msg.sender, this, _amount))
+        if (!ERC20(_tokenContract).transferFrom(msg.sender, this, _amount))
             revert();
             
         contracts[contractId] = LockContract(
             msg.sender,
             _receiver,
-            _token,
+            _tokenContract,
             _amount,
             _hashlock,
             _timelock,
@@ -136,7 +136,7 @@ contract HashedTimelockERC20 {
             contractId,
             msg.sender,
             _receiver,
-            _token,
+            _tokenContract,
             _amount,
             _hashlock,
             _timelock

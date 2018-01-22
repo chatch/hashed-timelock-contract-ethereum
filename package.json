@@ -1,21 +1,22 @@
 {
-  "name": "hashed-timelock-contract-ethereum",
-  "version": "0.0.2",
-  "description": "Hash Time Lock Contracts for Ethereum",
+  "name": "ethereum-htlc",
+  "version": "0.0.3",
+  "description": "Hashed Timelock Contracts for Ethereum",
   "main": "truffle.js",
+  "license": "GPL-3.0",
+  "repository": "chatch/hashed-timelock-contract-ethereum",
+  "bugs": {
+    "url": "https://github.com/chatch/hashed-timelock-contract-ethereum/issues"
+  },
   "directories": {
     "doc": "docs",
     "test": "test"
   },
   "scripts": {
-    "publish-abi":
-      "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
+    "publish-abi": "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
+    "prepublish": "npm run publish-abi",
     "test": "truffle test --network ci",
     "testrpc": "ganache-cli"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/chatch/hashed-timelock-contract-ethereum.git"
   },
   "keywords": [
     "ethereum",
@@ -23,18 +24,12 @@
     "solidity",
     "smart-contract"
   ],
-  "author": "",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/chatch/hashed-timelock-contract-ethereum/issues"
-  },
-  "homepage":
-    "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
+  "homepage": "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
-    "zeppelin-solidity": "^1.3.0"
+    "zeppelin-solidity": "^1.5.0"
   },
   "devDependencies": {
     "bluebird": "^3.5.1"
