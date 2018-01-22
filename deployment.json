@@ -1,0 +1,10 @@
+{
+  "htlc": {
+    "ropsten": "0x131c7BA3eC8eBE69a6c58D084FD70aDFaCEC76c5",
+    "testrpc": "0x345ca3e014aaf5dca488057592ee47305d9b3e10"
+  },
+  "htlcERC20": {
+    "ropsten": "",
+    "testrpc": "0xf25186b5081ff5ce73482ad761db0eb0d25abfbf"
+  }
+}
