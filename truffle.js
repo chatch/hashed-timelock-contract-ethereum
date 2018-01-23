@@ -17,9 +17,10 @@ module.exports = {
       // use --geth mode for Parity or this will fail (see https://github.com/paritytech/parity/issues/5538)
       host: '0.0.0.0', // Local Parity Docker container
       port: 8545,
+      from: '0x62d5391445c0c843580b92705b84852b9edb813b',
       network_id: 3,
       gas: 4000000,
-      gasPrice: 4000000000, // 4 shannon/gwei
+      gasPrice: 20000000000, // 20 shannon/gwei
     },
   },
 }

@@ -7,32 +7,39 @@
 * [HashedTimelock.sol](contracts/HashedTimelock.sol) - HTLC for native ETH token
 * [HashedTimelockERC20.sol](contracts/HashedTimelockERC20.sol) - HTLC for ERC20 tokens
 
-Use these contract for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
+Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
-Deployment:
+## Deployment
 
-* Ropsten: [0x131c7BA3eC8eBE69a6c58D084FD70aDFaCEC76c5](https://ropsten.etherscan.io/address/0x131c7BA3eC8eBE69a6c58D084FD70aDFaCEC76c5)
+HashedTimelock:
+
+* Ropsten: [0x0c0c3ec813a311acc37c8fc77d3cda0f32bcdd4b](https://ropsten.etherscan.io/address/0x0c0c3ec813a311acc37c8fc77d3cda0f32bcdd4b)
+* Mainnet: <not deployed yet ...>
+
+HashedTimelockERC20:
+
+* Ropsten: [0x42902c91ed93ac58f1c958806c8d22e7ea1835f8](https://ropsten.etherscan.io/address/0x42902c91ed93ac58f1c958806c8d22e7ea1835f8)
 * Mainnet: <not deployed yet ...>
 
 ## Protocol - Native ETH
 
-### Main flow - receiver withdraws the funds before timelock expiry
+### Main flow
 
-![](docs/sequence-diagram-success.png?raw=true)
+![](docs/sequence-diagram-htlc-eth-success.png?raw=true)
 
-### Timelock expires - sender gets refund
+### Timelock expires
 
-![](docs/sequence-diagram-refund.png?raw=true)
+![](docs/sequence-diagram-htlc-eth-refund.png?raw=true)
 
 ## Protocol - ERC20
 
-### Main flow - receiver withdraws the funds before timelock expiry
+### Main flow
 
-TODO
+![](docs/sequence-diagram-htlc-erc20-success.png?raw=true)
 
-### Timelock expires - sender gets refund
+### Timelock expires
 
-TODO
+![](docs/sequence-diagram-htlc-erc20-refund.png?raw=true)
 
 ## Interface
 
@@ -42,7 +49,7 @@ TODO
 2. `withdraw(contractId, preimage)` claim funds revealing the preimage
 3. `refund(contractId)` if withdraw was not called the contract creator can get a refund by calling this some time after the time lock has expired.
 
-See the tests [here](test/htlc.js) for examples of javascript clients using the contract.
+See [test/htlc.js](test/htlc.js) for examples of interacting with the contract from javascript.
 
 ### HashedTimelockERC20
 
@@ -50,7 +57,7 @@ See the tests [here](test/htlc.js) for examples of javascript clients using the 
 2. `withdraw(contractId, preimage)` claim funds revealing the preimage
 3. `refund(contractId)` if withdraw was not called the contract creator can get a refund by calling this some time after the time lock has expired.
 
-See the tests [here](test/htlcERC20.js) for examples of javascript clients using the contract.
+See [test/htlcERC20.js](test/htlcERC20.js) for examples of interacting with the contract from javascript.
 
 ## ABI and Bytecode
 
