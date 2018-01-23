@@ -1,0 +1,42 @@
+@startuml
+skinparam BoxPadding 20
+
+legend top
+HashedTimelockERC20 contract: sender withdraws refund after timelock expiry
+end legend
+
+box "Ethereum Network" #A9C5E6
+participant Sender as sender << Account >>
+participant Receiver as receiver << Account >>
+participant HashedTimelockERC20 as htlc << Smart Contract >>
+participant ERC20Contract as token << Smart Contract >>
+participant Events as events
+end box
+
+activate token
+  sender->token:approve(htlc address, amount)
+  token->sender
+deactivate token
+
+activate htlc
+  sender->htlc:newContract(\n\treceiver,\n\thashlock,\n\ttimelock,\n\ttokenContract,\n\tamount\n)
+  activate token
+    htlc->token:transferFrom(sender, htlc address, amount)
+    token->htlc
+  deactivate token
+  htlc->events:LogHTLCERC20New(contractId, locks, values, etc.)
+  htlc->sender:contractId
+deactivate htlc
+
+receiver->receiver:receiver does nothing\nafter timelock seconds:\nCONTRACT EXPIRES
+
+activate htlc
+  sender->htlc:refund(contractId)
+  activate token
+    htlc->token:transfer(sender, amount)
+    token->htlc
+  deactivate token
+  htlc->events:LogHTLCERC20Refund(contractId)
+deactivate htlc
+
+@enduml

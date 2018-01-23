@@ -1,22 +1,26 @@
 pragma solidity ^0.4.18;
 
 /**
- * @title Hash Time Lock Contracts.
+ * @title Hashed Timelock Contracts (HTLCs) on Ethereum ETH.
  *
- * A contract that provides an implementation of Hashed Timelock Contracts.
+ * This contract provides a way to create and keep HTLCs for ETH.
  *
- *  Protocol is as follows:
+ * See HashedTimelockERC20.sol for a contract that provides the same functions 
+ * for ERC20 tokens.
  *
- *  1) A contract is created by calling newContract with the terms of the
- *      contract including the time lock expiry and the hash lock hash.
- *  2) Funds can be unlocked by the specified reciever when they know the hash
- *      preimage by calling withdraw().
- *  3) In the event that funds were not unlocked by the receiver, the sender /
- *      contract creater can get a refund by calling refund() some time after
- *      the time lock has expired.
+ * Protocol:
+ *
+ *  1) newContract(receiver, hashlock, timelock) - a sender calls this to create
+ *      a new HTLC and gets back a 32 byte contract id
+ *  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
+ *      the hashlock hash they can claim the ETH with this function
+ *  3) refund() - after timelock has expired and if the receiver did not 
+ *      withdraw funds the sender / creater of the HTLC can get their ETH 
+ *      back with this function.
  */
 contract HashedTimelock {
-    event LogNewContract(
+    
+    event LogHTLCNew(
         bytes32 indexed contractId,
         address indexed sender,
         address indexed receiver,
@@ -24,14 +28,14 @@ contract HashedTimelock {
         bytes32 hashlock,
         uint timelock
     );
-    event LogContractPayed(bytes32 indexed contractId);
-    event LogContractRefunded(bytes32 indexed contractId);
+    event LogHTLCWithdraw(bytes32 indexed contractId);
+    event LogHTLCRefund(bytes32 indexed contractId);
 
     struct LockContract {
         address sender;
         address receiver;
         uint amount;
-        bytes32 hashlock;
+        bytes32 hashlock; // sha-2 sha256 hash
         uint timelock; // UNIX timestamp seconds - locked UNTIL this time
         bool withdrawn;
         bool refunded;
@@ -74,12 +78,15 @@ contract HashedTimelock {
     mapping (bytes32 => LockContract) contracts;
 
     /**
-     * Sender / Payer sets up a new hash time lock contract depositing the
-     * funds and providing the reciever and terms.
+     * @dev Sender sets up a new hash time lock contract depositing the ETH and 
+     * providing the reciever lock terms.
      *
-     * @param _receiver Receiver of hash time locked funds
-     * @param _hashlock Hash lock for which the reciever must provide the preimage for.
-     * @param _timelock Refunds can be made after this time
+     * @param _receiver Receiver of the ETH.
+     * @param _hashlock A sha-2 sha256 hash hashlock.
+     * @param _timelock UNIX epoch seconds time that the lock expires at. 
+     *                  Refunds can be made after this time.
+     * @return contractId Id of the new HTLC. This is needed for subsequent 
+     *                    calls.
      */
     function newContract(address _receiver, bytes32 _hashlock, uint _timelock)
         external
@@ -91,9 +98,8 @@ contract HashedTimelock {
         contractId = sha256(msg.sender, _receiver, msg.value, _hashlock, _timelock);
 
         // Reject if a contract already exists with the same parameters. The
-        // sender must change one of these parameters (ideally providing a
-        // different _hashlock).
-
+        // sender must change one of these parameters to create a new distinct 
+        // contract.
         if (haveContract(contractId))
             revert();
 
@@ -108,7 +114,7 @@ contract HashedTimelock {
             0x0
         );
 
-        LogNewContract(
+        LogHTLCNew(
             contractId,
             msg.sender,
             _receiver,
@@ -119,32 +125,34 @@ contract HashedTimelock {
     }
 
     /**
-     * Called by the receiver once they know the preimage. This will transfer
-     * the locked funds to their address..
+     * @dev Called by the receiver once they know the preimage of the hashlock.
+     * This will transfer the locked funds to their address.
      *
-     * @param _contractId Id of contract to withdraw from.
-     * @param _preimage sha256(_preimage) should equal the contract hashlock
+     * @param _contractId Id of the HTLC.
+     * @param _preimage sha256(_preimage) should equal the contract hashlock.
+     * @return bool true on success
      */
     function withdraw(bytes32 _contractId, bytes32 _preimage)
         external
         contractExists(_contractId)
-        withdrawable(_contractId)
         hashlockMatches(_contractId, _preimage)
+        withdrawable(_contractId)
         returns (bool)
     {
         LockContract storage c = contracts[_contractId];
         c.preimage = _preimage;
         c.withdrawn = true;
         c.receiver.transfer(c.amount);
-        LogContractPayed(_contractId);
+        LogHTLCWithdraw(_contractId);
         return true;
     }
 
     /**
-     * Called by the sender if there was no withdraw AND the time lock has
+     * @dev Called by the sender if there was no withdraw AND the time lock has
      * expired. This will refund the contract amount.
      *
-     * @param _contractId Id of contract to refund from.
+     * @param _contractId Id of HTLC to refund from.
+     * @return bool true on success
      */
     function refund(bytes32 _contractId)
         external
@@ -155,14 +163,14 @@ contract HashedTimelock {
         LockContract storage c = contracts[_contractId];
         c.refunded = true;
         c.sender.transfer(c.amount);
-        LogContractRefunded(_contractId);
+        LogHTLCRefund(_contractId);
         return true;
     }
 
     /**
-     * Get contract details.
-     *
-     * @param _contractId Return details of this contract
+     * @dev Get contract details.
+     * @param _contractId HTLC contract id
+     * @return All parameters in struct LockContract for _contractId HTLC
      */
     function getContract(bytes32 _contractId)
         public
@@ -185,6 +193,10 @@ contract HashedTimelock {
                 c.withdrawn, c.refunded, c.preimage);
     }
 
+    /**
+     * @dev Is there a contract with id _contractId.
+     * @param _contractId Id into contracts mapping.
+     */
     function haveContract(bytes32 _contractId)
         internal
         view

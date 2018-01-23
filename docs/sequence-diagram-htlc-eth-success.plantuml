@@ -26,7 +26,7 @@ end note
 
 activate htlc
 sender->htlc:newContract(receiver, hashlock, timelock) => ETH amount
-htlc->events:LogNewContract(contractId, locks, values, etc.)
+htlc->events:LogHTLCNew(contractId, locks, values, etc.)
 htlc->sender:contractId
 deactivate htlc
 
@@ -35,7 +35,7 @@ receiver->receiver:knows/obtains secret preimage\n[sha256(secret preimage) == ha
 
 activate htlc
 receiver->htlc:withdraw(contractId, secret preimage)
-htlc->events:LogWithdrawal(contractId)
+htlc->events:LogHTLCWithdraw(contractId)
 htlc->receiver:ETH amount <=
 deactivate htlc
 
