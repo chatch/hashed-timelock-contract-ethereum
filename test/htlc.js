@@ -1,5 +1,6 @@
 import Promise from 'bluebird'
 
+import {assertEqualBN} from './helper/assert'
 import {
   bufToStr,
   htlcArrayToObj,
@@ -137,8 +138,9 @@ contract('HashedTimelock', accounts => {
     const expectedBal = receiverBalBefore
       .plus(oneFinney)
       .minus(txGas(withdrawTx))
-    assert(
-      web3.eth.getBalance(receiver).equals(expectedBal),
+    assertEqualBN(
+      web3.eth.getBalance(receiver),
+      expectedBal,
       "receiver balance doesn't match"
     )
     const contractArr = await htlc.getContract.call(contractId)
@@ -251,8 +253,9 @@ contract('HashedTimelock', accounts => {
           const tx = await htlc.refund(contractId, {from: sender})
           // Check contract funds are now at the senders address
           const expectedBal = balBefore.plus(oneFinney).minus(txGas(tx))
-          assert(
-            web3.eth.getBalance(sender).equals(expectedBal),
+          assertEqualBN(
+            web3.eth.getBalance(sender),
+            expectedBal,
             "sender balance doesn't match"
           )
           const contract = await htlc.getContract.call(contractId)

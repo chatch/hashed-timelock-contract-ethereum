@@ -44,9 +44,24 @@ const htlcArrayToObj = c => {
   }
 }
 
+const htlcERC20ArrayToObj = c => {
+  return {
+    sender: c[0],
+    receiver: c[1],
+    token: c[2],
+    amount: c[3],
+    hashlock: c[4],
+    timelock: c[5],
+    withdrawn: c[6],
+    refunded: c[7],
+    preimage: c[8],
+  }
+}
+
 export {
   bufToStr,
   htlcArrayToObj,
+  htlcERC20ArrayToObj,
   isSha256Hash,
   newSecretHashPair,
   nowSeconds,
