@@ -1,4 +1,5 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
+pragma experimental "v0.5.0";
 
 /**
  * @title Hashed Timelock Contracts (HTLCs) on Ethereum ETH.
@@ -114,7 +115,7 @@ contract HashedTimelock {
             0x0
         );
 
-        LogHTLCNew(
+        emit LogHTLCNew(
             contractId,
             msg.sender,
             _receiver,
@@ -143,7 +144,7 @@ contract HashedTimelock {
         c.preimage = _preimage;
         c.withdrawn = true;
         c.receiver.transfer(c.amount);
-        LogHTLCWithdraw(_contractId);
+        emit LogHTLCWithdraw(_contractId);
         return true;
     }
 
@@ -163,7 +164,7 @@ contract HashedTimelock {
         LockContract storage c = contracts[_contractId];
         c.refunded = true;
         c.sender.transfer(c.amount);
-        LogHTLCRefund(_contractId);
+        emit LogHTLCRefund(_contractId);
         return true;
     }
 

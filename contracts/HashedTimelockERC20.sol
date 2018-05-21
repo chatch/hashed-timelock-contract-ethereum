@@ -1,6 +1,7 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
+pragma experimental "v0.5.0";
 
-import "zeppelin-solidity/contracts/token/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /**
 * @title Hashed Timelock Contracts (HTLCs) on Ethereum ERC20 tokens.
@@ -142,7 +143,7 @@ contract HashedTimelockERC20 {
             0x0
         );
 
-        LogHTLCERC20New(
+        emit LogHTLCERC20New(
             contractId,
             msg.sender,
             _receiver,
@@ -172,7 +173,7 @@ contract HashedTimelockERC20 {
         c.preimage = _preimage;
         c.withdrawn = true;
         ERC20(c.tokenContract).transfer(c.receiver, c.amount);
-        LogHTLCERC20Withdraw(_contractId);
+        emit LogHTLCERC20Withdraw(_contractId);
         return true;
     }
 
@@ -192,7 +193,7 @@ contract HashedTimelockERC20 {
         LockContract storage c = contracts[_contractId];
         c.refunded = true;
         ERC20(c.tokenContract).transfer(c.sender, c.amount);
-        LogHTLCERC20Refund(_contractId);
+        emit LogHTLCERC20Refund(_contractId);
         return true;
     }
 

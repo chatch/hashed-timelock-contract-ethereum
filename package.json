@@ -1,6 +1,6 @@
 {
   "name": "ethereum-htlc",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Hashed Timelock Contracts for Ethereum",
   "main": "truffle.js",
   "license": "GPL-3.0",
@@ -29,7 +29,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
-    "zeppelin-solidity": "^1.5.0"
+    "openzeppelin-solidity": "^1.9.0"
   },
   "devDependencies": {
     "bluebird": "^3.5.1"
