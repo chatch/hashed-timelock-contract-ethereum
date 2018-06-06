@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 pragma experimental "v0.5.0";
 
 /**
@@ -44,35 +44,38 @@ contract HashedTimelock {
     }
 
     modifier fundsSent() {
-        require(msg.value > 0);
+        require(msg.value > 0, "msg.value must be > 0");
         _;
     }
     modifier futureTimelock(uint _time) {
         // only requirement is the timelock time is after the last blocktime (now).
         // probably want something a bit further in the future then this.
         // but this is still a useful sanity check:
-        require(_time > now);
+        require(_time > now, "timelock time must be in the future");
         _;
     }
     modifier contractExists(bytes32 _contractId) {
-        require(haveContract(_contractId));
+        require(haveContract(_contractId), "contractId does not exist");
         _;
     }
     modifier hashlockMatches(bytes32 _contractId, bytes32 _x) {
-        require(contracts[_contractId].hashlock == sha256(_x));
+        require(
+            contracts[_contractId].hashlock == sha256(abi.encodePacked(_x)),
+            "hashlock hash does not match"
+        );
         _;
     }
     modifier withdrawable(bytes32 _contractId) {
-        require(contracts[_contractId].receiver == msg.sender);
-        require(contracts[_contractId].withdrawn == false);
-        require(contracts[_contractId].timelock > now);
+        require(contracts[_contractId].receiver == msg.sender, "withdrawable: not receiver");
+        require(contracts[_contractId].withdrawn == false, "withdrawable: already withdrawn");
+        require(contracts[_contractId].timelock > now, "withdrawable: timelock time must be in the future");
         _;
     }
     modifier refundable(bytes32 _contractId) {
-        require(contracts[_contractId].sender == msg.sender);
-        require(contracts[_contractId].refunded == false);
-        require(contracts[_contractId].withdrawn == false);
-        require(contracts[_contractId].timelock <= now);
+        require(contracts[_contractId].sender == msg.sender, "refundable: not sender");
+        require(contracts[_contractId].refunded == false, "refundable: already refunded");
+        require(contracts[_contractId].withdrawn == false, "refundable: already withdrawn");
+        require(contracts[_contractId].timelock <= now, "refundable: timelock not yet passed");
         _;
     }
 
@@ -96,7 +99,15 @@ contract HashedTimelock {
         futureTimelock(_timelock)
         returns (bytes32 contractId)
     {
-        contractId = sha256(msg.sender, _receiver, msg.value, _hashlock, _timelock);
+        contractId = sha256(
+            abi.encodePacked(
+                msg.sender,
+                _receiver,
+                msg.value,
+                _hashlock,
+                _timelock
+            )
+        );
 
         // Reject if a contract already exists with the same parameters. The
         // sender must change one of these parameters to create a new distinct 

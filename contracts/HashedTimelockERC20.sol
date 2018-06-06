@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 pragma experimental "v0.5.0";
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
@@ -49,36 +49,42 @@ contract HashedTimelockERC20 {
     }
 
     modifier tokensTransferable(address _token, address _sender, uint _amount) {
-        require(_amount > 0);
-        require(ERC20(_token).allowance(_sender, this) >= _amount);
+        require(_amount > 0, "token amount must be > 0");
+        require(
+            ERC20(_token).allowance(_sender, this) >= _amount,
+            "token allowance must be >= amount"
+        );
         _;
     }
     modifier futureTimelock(uint _time) {
         // only requirement is the timelock time is after the last blocktime (now).
         // probably want something a bit further in the future then this.
         // but this is still a useful sanity check:
-        require(_time > now);
+        require(_time > now, "timelock time must be in the future");
         _;
     }
     modifier contractExists(bytes32 _contractId) {
-        require(haveContract(_contractId));
+        require(haveContract(_contractId), "contractId does not exist");
         _;
     }
     modifier hashlockMatches(bytes32 _contractId, bytes32 _x) {
-        require(contracts[_contractId].hashlock == sha256(_x));
+        require(
+            contracts[_contractId].hashlock == sha256(abi.encodePacked(_x)),
+            "hashlock hash does not match"
+        );
         _;
     }
     modifier withdrawable(bytes32 _contractId) {
-        require(contracts[_contractId].receiver == msg.sender);
-        require(contracts[_contractId].withdrawn == false);
-        require(contracts[_contractId].timelock > now);
+        require(contracts[_contractId].receiver == msg.sender, "withdrawable: not receiver");
+        require(contracts[_contractId].withdrawn == false, "withdrawable: already withdrawn");
+        require(contracts[_contractId].timelock > now, "withdrawable: timelock time must be in the future");
         _;
     }
     modifier refundable(bytes32 _contractId) {
-        require(contracts[_contractId].sender == msg.sender);
-        require(contracts[_contractId].refunded == false);
-        require(contracts[_contractId].withdrawn == false);
-        require(contracts[_contractId].timelock <= now);
+        require(contracts[_contractId].sender == msg.sender, "refundable: not sender");
+        require(contracts[_contractId].refunded == false, "refundable: already refunded");
+        require(contracts[_contractId].withdrawn == false, "refundable: already withdrawn");
+        require(contracts[_contractId].timelock <= now, "refundable: timelock not yet passed");
         _;
     }
 
@@ -113,12 +119,14 @@ contract HashedTimelockERC20 {
         returns (bytes32 contractId)
     {
         contractId = sha256(
-            msg.sender,
-            _receiver,
-            _tokenContract,
-            _amount,
-            _hashlock,
-            _timelock
+            abi.encodePacked(
+                msg.sender,
+                _receiver,
+                _tokenContract,
+                _amount,
+                _hashlock,
+                _timelock
+            )
         );
 
         // Reject if a contract already exists with the same parameters. The
