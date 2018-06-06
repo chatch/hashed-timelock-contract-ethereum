@@ -195,11 +195,11 @@ contract('HashedTimelockERC20', accounts => {
   it('withdraw() should fail after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock1Second = curBlkTime + 1
+    const timelock2Seconds = curBlkTime + 2
 
     const newContractTx = await newContract({
       hashlock: hashPair.hash,
-      timelock: timelock1Second,
+      timelock: timelock2Seconds,
     })
     const contractId = txContractId(newContractTx)
 
@@ -214,26 +214,26 @@ contract('HashedTimelockERC20', accounts => {
           )
         } catch (err) {
           assert.equal(err.message, REQUIRE_FAILED_MSG)
-          resolve()
+          resolve({message: 'success'})
         }
-      }, 1000)
+      }, 2000)
     })
   })
 
   it('refund() should pass after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock1Second = curBlkTime + 1
+    const timelock2Seconds = curBlkTime + 2
 
     await token.approve(htlc.address, tokenAmount, {from: sender})
     const newContractTx = await newContract({
-      timelock: timelock1Second,
+      timelock: timelock2Seconds,
       hashlock: hashPair.hash,
     })
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) =>
       setTimeout(async () => {
         try {
           // attempt to get the refund now we've moved past the timelock time
@@ -255,8 +255,8 @@ contract('HashedTimelockERC20', accounts => {
         } catch (err) {
           reject(err)
         }
-      }, 1000)
-    })
+      }, 2000)
+    )
   })
 
   it('refund() should fail before the timelock expiry', async () => {

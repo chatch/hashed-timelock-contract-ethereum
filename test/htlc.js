@@ -213,7 +213,7 @@ contract('HashedTimelock', accounts => {
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) =>
       setTimeout(async () => {
         // attempt to withdraw and check that it is not allowed
         try {
@@ -226,7 +226,7 @@ contract('HashedTimelock', accounts => {
           resolve()
         }
       }, 1000)
-    })
+    )
   })
 
   it('refund() should pass after timelock expiry', async () => {
@@ -246,7 +246,7 @@ contract('HashedTimelock', accounts => {
     const contractId = txContractId(newContractTx)
 
     // wait one second so we move past the timelock time
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) =>
       setTimeout(async () => {
         try {
           const balBefore = web3.eth.getBalance(sender)
@@ -266,7 +266,7 @@ contract('HashedTimelock', accounts => {
           reject(err)
         }
       }, 1000)
-    })
+    )
   })
 
   it('refund() should fail before the timelock expiry', async () => {
