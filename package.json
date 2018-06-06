@@ -17,8 +17,7 @@
     "deploy-ropsten": "npm run prepare && truffle migrate --network ropsten",
     "prepare": "npm run publish-abi && npm run test",
     "prepublish": "npm run publish-abi",
-    "publish-abi":
-      "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
+    "publish-abi": "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
     "test": "truffle test"
   },
   "keywords": [
@@ -27,11 +26,10 @@
     "solidity",
     "smart-contract"
   ],
-  "homepage":
-    "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
+  "homepage": "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "openzeppelin-solidity": "^1.9.0"
   },
