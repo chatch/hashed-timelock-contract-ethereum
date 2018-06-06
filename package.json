@@ -1,6 +1,6 @@
 {
   "name": "ethereum-htlc",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Hashed Timelock Contracts for Ethereum",
   "main": "truffle.js",
   "license": "GPL-3.0",
