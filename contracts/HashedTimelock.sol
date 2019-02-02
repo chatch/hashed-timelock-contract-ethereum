@@ -186,7 +186,6 @@ contract HashedTimelock {
     function getContract(bytes32 _contractId)
         public
         view
-        contractExists(_contractId)
         returns (
             address sender,
             address receiver,
@@ -198,6 +197,8 @@ contract HashedTimelock {
             bytes32 preimage
         )
     {
+        if (haveContract(_contractId) == false)
+            return (address(0), address(0), 0, 0, 0, false, false, 0);
         LockContract storage c = contracts[_contractId];
         return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
                 c.withdrawn, c.refunded, c.preimage);
