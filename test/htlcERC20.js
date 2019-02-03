@@ -13,7 +13,7 @@ import {
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const ASEANToken = artifacts.require('./helper/ASEANToken.sol')
 
-const REQUIRE_FAILED_MSG = 'VM Exception while processing transaction: revert'
+const REQUIRE_FAILED_MSG = 'Returned error: VM Exception while processing transaction: revert'
 
 // some testing data
 const hourSeconds = 3600
@@ -119,12 +119,12 @@ contract('HashedTimelockERC20', accounts => {
   it('newContract() should reject a duplicate contract request', async () => {
     const hashlock = newSecretHashPair().hash
     const timelock = timeLock1Hour + 5
-    const balBefore = await token.balanceOf(htlc.address)
+    const balBefore = web3.utils.toBN(await token.balanceOf(htlc.address))
 
     await newContract({hashlock: hashlock, timelock: timelock})
     await assertTokenBal(
       htlc.address,
-      balBefore.plus(tokenAmount),
+      balBefore.add(web3.utils.toBN(tokenAmount)),
       'tokens not transfered to htlc contract'
     )
 
@@ -172,7 +172,7 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.withdraw(contractId, wrongSecret, {from: receiver})
       assert.fail('expected failure due to 0 value transferred')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -188,14 +188,14 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.withdraw(contractId, hashPair.secret, {from: someGuy})
       assert.fail('expected failure due to wrong receiver')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
   it('withdraw() should fail after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
-    const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock2Seconds = curBlkTime + 2
+    const curBlock = await web3.eth.getBlock('latest')
+    const timelock2Seconds = curBlock.timestamp + 2
 
     const newContractTx = await newContract({
       hashlock: hashPair.hash,
@@ -213,7 +213,7 @@ contract('HashedTimelockERC20', accounts => {
             new Error('expected failure due to withdraw after timelock expired')
           )
         } catch (err) {
-          assert.equal(err.message, REQUIRE_FAILED_MSG)
+          assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
           resolve({message: 'success'})
         }
       }, 2000)
@@ -222,8 +222,8 @@ contract('HashedTimelockERC20', accounts => {
 
   it('refund() should pass after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
-    const curBlkTime = web3.eth.getBlock('latest').timestamp
-    const timelock2Seconds = curBlkTime + 2
+    const curBlock = await web3.eth.getBlock('latest')
+    const timelock2Seconds = curBlock.timestamp + 2
 
     await token.approve(htlc.address, tokenAmount, {from: sender})
     const newContractTx = await newContract({
@@ -243,7 +243,7 @@ contract('HashedTimelockERC20', accounts => {
           // Check tokens returned to the sender
           await assertTokenBal(
             sender,
-            balBefore.plus(tokenAmount),
+            balBefore.add(web3.utils.toBN(tokenAmount)),
             `sender balance unexpected`
           )
 
@@ -266,7 +266,7 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.refund(contractId, {from: sender})
       assert.fail('expected failure due to timelock')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -321,7 +321,7 @@ contract('HashedTimelockERC20', accounts => {
       )
       assert.fail(shouldFailMsg)
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   }
 })

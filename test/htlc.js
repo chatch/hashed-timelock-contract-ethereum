@@ -3,6 +3,7 @@ import Promise from 'bluebird'
 import {assertEqualBN} from './helper/assert'
 import {
   bufToStr,
+  getBalance,
   htlcArrayToObj,
   isSha256Hash,
   newSecretHashPair,
@@ -15,11 +16,11 @@ import {
 
 const HashedTimelock = artifacts.require('./HashedTimelock.sol')
 
-const REQUIRE_FAILED_MSG = 'VM Exception while processing transaction: revert'
+const REQUIRE_FAILED_MSG = 'Returned error: VM Exception while processing transaction: revert'
 
 const hourSeconds = 3600
 const timeLock1Hour = nowSeconds() + hourSeconds
-const oneFinney = web3.toWei(1, 'finney')
+const oneFinney = web3.utils.toWei(web3.utils.toBN(1), 'finney')
 
 contract('HashedTimelock', accounts => {
   const sender = accounts[1]
@@ -44,7 +45,7 @@ contract('HashedTimelock', accounts => {
 
     assert.equal(logArgs.sender, sender)
     assert.equal(logArgs.receiver, receiver)
-    assert.equal(logArgs.amount, oneFinney)
+    assertEqualBN(logArgs.amount, oneFinney)
     assert.equal(logArgs.hashlock, hashPair.hash)
     assert.equal(logArgs.timelock, timeLock1Hour)
 
@@ -52,7 +53,7 @@ contract('HashedTimelock', accounts => {
     const contract = htlcArrayToObj(contractArr)
     assert.equal(contract.sender, sender)
     assert.equal(contract.receiver, receiver)
-    assert.equal(contract.amount, oneFinney)
+    assertEqualBN(contract.amount, oneFinney)
     assert.equal(contract.hashlock, hashPair.hash)
     assert.equal(contract.timelock.toNumber(), timeLock1Hour)
     assert.isFalse(contract.withdrawn)
@@ -73,7 +74,7 @@ contract('HashedTimelock', accounts => {
       })
       assert.fail('expected failure due to 0 value transferred')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -89,7 +90,7 @@ contract('HashedTimelock', accounts => {
 
       assert.fail('expected failure due past timelock')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -109,7 +110,7 @@ contract('HashedTimelock', accounts => {
       })
       assert.fail('expected failure due to duplicate request')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -127,19 +128,20 @@ contract('HashedTimelock', accounts => {
     )
 
     const contractId = txContractId(newContractTx)
-    const receiverBalBefore = web3.eth.getBalance(receiver)
+    const receiverBalBefore = await getBalance(receiver)
 
     // receiver calls withdraw with the secret to get the funds
     const withdrawTx = await htlc.withdraw(contractId, hashPair.secret, {
       from: receiver,
     })
+    const tx = await web3.eth.getTransaction(withdrawTx.tx)
 
     // Check contract funds are now at the receiver address
     const expectedBal = receiverBalBefore
-      .plus(oneFinney)
-      .minus(txGas(withdrawTx))
+      .add(oneFinney)
+      .sub(txGas(withdrawTx, tx.gasPrice))
     assertEqualBN(
-      web3.eth.getBalance(receiver),
+      await getBalance(receiver),
       expectedBal,
       "receiver balance doesn't match"
     )
@@ -170,7 +172,7 @@ contract('HashedTimelock', accounts => {
       await htlc.withdraw(contractId, wrongSecret, {from: receiver})
       assert.fail('expected failure due to 0 value transferred')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -192,7 +194,7 @@ contract('HashedTimelock', accounts => {
       await htlc.withdraw(contractId, hashPair.secret, {from: someGuy})
       assert.fail('expected failure due to wrong receiver')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
@@ -222,7 +224,7 @@ contract('HashedTimelock', accounts => {
             new Error('expected failure due to withdraw after timelock expired')
           )
         } catch (err) {
-          assert.equal(err.message, REQUIRE_FAILED_MSG)
+          assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
           resolve()
         }
       }, 1000)
@@ -249,12 +251,13 @@ contract('HashedTimelock', accounts => {
     return new Promise((resolve, reject) =>
       setTimeout(async () => {
         try {
-          const balBefore = web3.eth.getBalance(sender)
-          const tx = await htlc.refund(contractId, {from: sender})
+          const balBefore = await getBalance(sender)
+          const refundTx = await htlc.refund(contractId, {from: sender})
+          const tx = await web3.eth.getTransaction(refundTx.tx)
           // Check contract funds are now at the senders address
-          const expectedBal = balBefore.plus(oneFinney).minus(txGas(tx))
+          const expectedBal = balBefore.add(oneFinney).sub(txGas(refundTx, tx.gasPrice))
           assertEqualBN(
-            web3.eth.getBalance(sender),
+            await getBalance(sender),
             expectedBal,
             "sender balance doesn't match"
           )
@@ -286,7 +289,7 @@ contract('HashedTimelock', accounts => {
       await htlc.refund(contractId, {from: sender})
       assert.fail('expected failure due to timelock')
     } catch (err) {
-      assert.equal(err.message, REQUIRE_FAILED_MSG)
+      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
     }
   })
 
