@@ -26,8 +26,8 @@ const newSecretHashPair = () => {
 
 const nowSeconds = () => Math.floor(Date.now() / 1000)
 
-const gasPrice = 100000000000 // truffle fixed gas price
-const txGas = txReceipt => txReceipt.receipt.gasUsed * gasPrice
+const defaultGasPrice = 100000000000 // truffle fixed gas price
+const txGas = (txReceipt, gasPrice = defaultGasPrice) => web3.utils.toBN(txReceipt.receipt.gasUsed * gasPrice)
 const txLoggedArgs = txReceipt => txReceipt.logs[0].args
 const txContractId = txReceipt => txLoggedArgs(txReceipt).contractId
 
@@ -58,8 +58,11 @@ const htlcERC20ArrayToObj = c => {
   }
 }
 
+const getBalance = async (address) => web3.utils.toBN(await web3.eth.getBalance(address))
+
 export {
   bufToStr,
+  getBalance,
   htlcArrayToObj,
   htlcERC20ArrayToObj,
   isSha256Hash,

@@ -1,5 +1,4 @@
-pragma solidity ^0.4.24;
-pragma experimental "v0.5.0";
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
@@ -51,7 +50,7 @@ contract HashedTimelockERC20 {
     modifier tokensTransferable(address _token, address _sender, uint _amount) {
         require(_amount > 0, "token amount must be > 0");
         require(
-            ERC20(_token).allowance(_sender, this) >= _amount,
+            ERC20(_token).allowance(_sender, address(this)) >= _amount,
             "token allowance must be >= amount"
         );
         _;
@@ -136,9 +135,9 @@ contract HashedTimelockERC20 {
             revert();
 
         // This contract becomes the temporary owner of the tokens
-        if (!ERC20(_tokenContract).transferFrom(msg.sender, this, _amount))
+        if (!ERC20(_tokenContract).transferFrom(msg.sender, address(this), _amount))
             revert();
-            
+
         contracts[contractId] = LockContract(
             msg.sender,
             _receiver,
@@ -226,7 +225,7 @@ contract HashedTimelockERC20 {
         )
     {
         if (haveContract(_contractId) == false)
-            return;
+            return (address(0), address(0), address(0), 0, 0, 0, false, false, 0);
         LockContract storage c = contracts[_contractId];
         return (
             c.sender,

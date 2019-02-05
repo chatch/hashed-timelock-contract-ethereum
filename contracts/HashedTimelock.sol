@@ -1,5 +1,4 @@
-pragma solidity ^0.4.24;
-pragma experimental "v0.5.0";
+pragma solidity ^0.5.0;
 
 /**
  * @title Hashed Timelock Contracts (HTLCs) on Ethereum ETH.
@@ -20,7 +19,7 @@ pragma experimental "v0.5.0";
  *      back with this function.
  */
 contract HashedTimelock {
-    
+
     event LogHTLCNew(
         bytes32 indexed contractId,
         address indexed sender,
@@ -33,8 +32,8 @@ contract HashedTimelock {
     event LogHTLCRefund(bytes32 indexed contractId);
 
     struct LockContract {
-        address sender;
-        address receiver;
+        address payable sender;
+        address payable receiver;
         uint amount;
         bytes32 hashlock; // sha-2 sha256 hash
         uint timelock; // UNIX timestamp seconds - locked UNTIL this time
@@ -92,7 +91,7 @@ contract HashedTimelock {
      * @return contractId Id of the new HTLC. This is needed for subsequent 
      *                    calls.
      */
-    function newContract(address _receiver, bytes32 _hashlock, uint _timelock)
+    function newContract(address payable _receiver, bytes32 _hashlock, uint _timelock)
         external
         payable
         fundsSent
@@ -199,7 +198,7 @@ contract HashedTimelock {
         )
     {
         if (haveContract(_contractId) == false)
-            return;
+            return (address(0), address(0), 0, 0, 0, false, false, 0);
         LockContract storage c = contracts[_contractId];
         return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
                 c.withdrawn, c.refunded, c.preimage);
