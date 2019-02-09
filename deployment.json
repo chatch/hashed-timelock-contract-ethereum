@@ -1,12 +1,12 @@
 {
   "htlc": {
-    "kovan": "0xc3ed16874bc9551b079c135eb27b10ee1348ac12",
-    "ropsten": "0xbb6883511ff318ba85b5745fb1a6083537bf914c",
+    "kovan": "0xe196bb1e25483ed771b6691929d47943023c26fe",
+    "ropsten": "0x243785f6b65418191ea20b45fde7069ffe4f8cef",
     "testrpc": "0x345ca3e014aaf5dca488057592ee47305d9b3e10"
   },
   "htlcERC20": {
-    "kovan": "0xfD4BEbA807E89E2cA209cd53c28471840446ddf2",
-    "ropsten": "0x6879e090240358f59fc5d212f87da63d3288749b",
+    "kovan": "0x763eedd3c04a9a2fca67ac51fc16e394472f29a2",
+    "ropsten": "0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7",
     "testrpc": "0xf25186b5081ff5ce73482ad761db0eb0d25abfbf"
   }
 }

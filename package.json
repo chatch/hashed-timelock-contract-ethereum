@@ -1,6 +1,6 @@
 {
   "name": "ethereum-htlc",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Hashed Timelock Contracts for Ethereum",
   "main": "truffle.js",
   "license": "GPL-3.0",
@@ -13,8 +13,10 @@
     "test": "test"
   },
   "scripts": {
+    "deploy-kovan-infura": "npm run prepare && truffle migrate --network kovaninfura",
+    "deploy-ropsten-infura": "npm run prepare && truffle migrate --network ropsteninfura",
+    "deploy-rinkeby-infura": "npm run prepare && truffle migrate --network rinkebyinfura",
     "deploy-kovan": "npm run prepare && truffle migrate --network kovan",
-    "deploy-ropsten": "npm run prepare && truffle migrate --network ropsten",
     "prepare": "npm run publish-abi && npm run test",
     "prepublish": "npm run publish-abi",
     "publish-abi": "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
@@ -34,6 +36,8 @@
     "openzeppelin-solidity": "^2.1.2"
   },
   "devDependencies": {
-    "bluebird": "^3.5.1"
+    "bluebird": "^3.5.1",
+    "eslint": "^5.13.0",
+    "truffle-hdwallet-provider": "^1.0.3"
   }
 }

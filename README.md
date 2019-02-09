@@ -13,15 +13,15 @@ Use these contracts for creating HTLCs on the Ethereum side of a cross chain ato
 
 HashedTimelock:
 
-- Kovan: [0xc3ed16874bc9551b079c135eb27b10ee1348ac12](https://kovan.etherscan.io/address/0xc3ed16874bc9551b079c135eb27b10ee1348ac12)
+- Kovan: [0xe196bb1e25483ed771b6691929d47943023c26fe](https://kovan.etherscan.io/address/0xe196bb1e25483ed771b6691929d47943023c26fe)
 - Ropsten:
-  [0xbb6883511ff318ba85b5745fb1a6083537bf914c](https://ropsten.etherscan.io/address/0xbb6883511ff318ba85b5745fb1a6083537bf914c)
+  [0x243785f6b65418191ea20b45fde7069ffe4f8cef](https://ropsten.etherscan.io/address/0x243785f6b65418191ea20b45fde7069ffe4f8cef)
 - Mainnet: <not deployed yet ...>
 
 HashedTimelockERC20:
 
-- Kovan: [0xfD4BEbA807E89E2cA209cd53c28471840446ddf2](https://kovan.etherscan.io/address/0xfD4BEbA807E89E2cA209cd53c28471840446ddf2)
-- Ropsten: [0x6879e090240358f59fc5d212f87da63d3288749b](https://ropsten.etherscan.io/address/0x6879e090240358f59fc5d212f87da63d3288749b)
+- Kovan: [0x763eedd3c04a9a2fca67ac51fc16e394472f29a2](https://kovan.etherscan.io/address/0x763eedd3c04a9a2fca67ac51fc16e394472f29a2)
+- Ropsten: [0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7](https://ropsten.etherscan.io/address/0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7)
 - Mainnet: <not deployed yet ...>
 
 ## Protocol - Native ETH

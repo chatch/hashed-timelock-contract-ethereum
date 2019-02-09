@@ -1,7 +1,7 @@
 {
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 9,
     "ecmaFeatures": {
       "impliedStrict": true
     },
@@ -13,7 +13,6 @@
     "mocha": true
   },
   "globals": {
-    // truffle test framework provided:
     "web3": true,
     "contract": true,
     "artifacts": true,
@@ -21,6 +20,7 @@
   },
   "rules": {
     "no-console": "off",
-    "no-unused-vars": ["warn"]
+    "no-unused-vars": ["warn"],
+    "semi": ["error", "never"]
   }
 }
