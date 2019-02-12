@@ -128,12 +128,13 @@ contract('HashedTimelockERC20', accounts => {
       'tokens not transfered to htlc contract'
     )
 
+    await token.approve(htlc.address, tokenAmount, {from: sender})
     // now attempt to create another with the exact same parameters
     await newContractExpectFailure(
       'expected failure due to duplicate contract details',
       {
-        timelock,
-        hashlock,
+        timelock: timelock,
+        hashlock: hashlock,
       }
     )
   })
@@ -306,12 +307,13 @@ contract('HashedTimelockERC20', accounts => {
       receiverAddr = receiver,
       amount = tokenAmount,
       timelock = timeLock1Hour,
+      hashlock = newSecretHashPair().hash
     } = {}
   ) => {
     try {
       await htlc.newContract(
         receiverAddr,
-        newSecretHashPair().hash,
+        hashlock,
         timelock,
         token.address,
         amount,
