@@ -153,7 +153,7 @@ contract('HashedTimelockERC20', accounts => {
     await assertTokenBal(
       receiver,
       tokenAmount,
-      `receiver doesn't not own ${tokenAmount} tokens`
+      `receiver doesn't own ${tokenAmount} tokens`
     )
 
     const contractArr = await htlc.getContract.call(contractId)
