@@ -10,12 +10,55 @@
 Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
 ## Run Tests
-Install ganache [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
-Launch and set the network ID to `4447`
+* Install truffle
+* Install ganache [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
+* Launch and set the network ID to `4447`
 
 ```
-npm i
-truffle test
+$ npm i
+$ truffle test
+Using network 'test'.
+
+Compiling ./test/helper/ASEANToken.sol...
+Compiling ./test/helper/EUToken.sol...
+
+
+  Contract: HashedTimelock
+    ✓ newContract() should create new contract and store correct details (88ms)
+    ✓ newContract() should fail when no ETH sent (62ms)
+    ✓ newContract() should fail with timelocks in the past (76ms)
+    ✓ newContract() should reject a duplicate contract request (161ms)
+    ✓ withdraw() should send receiver funds when given the correct secret preimage (211ms)
+    ✓ withdraw() should fail if preimage does not hash to hashX (121ms)
+    ✓ withdraw() should fail if caller is not the receiver (134ms)
+    ✓ withdraw() should fail after timelock expiry (1217ms)
+    ✓ refund() should pass after timelock expiry (1182ms)
+    ✓ refund() should fail before the timelock expiry (164ms)
+    ✓ getContract() returns empty record when contract doesn't exist
+
+  Contract: HashedTimelockERC20
+    ✓ newContract() should create new contract and store correct details (225ms)
+    ✓ newContract() should fail when no token transfer approved (123ms)
+    ✓ newContract() should fail when token amount is 0 (103ms)
+    ✓ newContract() should fail when tokens approved for some random account (232ms)
+    ✓ newContract() should fail when the timelock is in the past (110ms)
+    ✓ newContract() should reject a duplicate contract request (280ms)
+    ✓ withdraw() should send receiver funds when given the correct secret preimage (343ms)
+    ✓ withdraw() should fail if preimage does not hash to hashX (231ms)
+    ✓ withdraw() should fail if caller is not the receiver  (314ms)
+    ✓ withdraw() should fail after timelock expiry (2192ms)
+    ✓ refund() should pass after timelock expiry (2443ms)
+    ✓ refund() should fail before the timelock expiry (230ms)
+    ✓ getContract() returns empty record when contract doesn't exist
+
+  Contract: HashedTimelock swap between two ERC20 tokens
+    ✓ Step 1: Alice sets up a swap with Bob in the ASEANToken contract (164ms)
+    ✓ Step 2: Bob sets up a swap with Alice in the EUToken contract (143ms)
+    ✓ Step 3: Alice as the initiator withdraws from the EUToken with the secret (134ms)
+    ✓ Step 4: Bob as the counterparty withdraws from the ASEANToken with the secret learned from Alice's withdrawal (95ms)
+
+
+  28 passing (12s)
 ```
 
 ## Protocol - Native ETH
