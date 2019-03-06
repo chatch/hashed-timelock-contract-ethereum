@@ -9,20 +9,14 @@
 
 Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
-## Deployment
+## Run Tests
+Install ganache [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
+Launch and set the network ID to `4447`
 
-HashedTimelock:
-
-- Kovan: [0xe196bb1e25483ed771b6691929d47943023c26fe](https://kovan.etherscan.io/address/0xe196bb1e25483ed771b6691929d47943023c26fe)
-- Ropsten:
-  [0x243785f6b65418191ea20b45fde7069ffe4f8cef](https://ropsten.etherscan.io/address/0x243785f6b65418191ea20b45fde7069ffe4f8cef)
-- Mainnet: <not deployed yet ...>
-
-HashedTimelockERC20:
-
-- Kovan: [0x763eedd3c04a9a2fca67ac51fc16e394472f29a2](https://kovan.etherscan.io/address/0x763eedd3c04a9a2fca67ac51fc16e394472f29a2)
-- Ropsten: [0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7](https://ropsten.etherscan.io/address/0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7)
-- Mainnet: <not deployed yet ...>
+```
+npm i
+truffle test
+```
 
 ## Protocol - Native ETH
 

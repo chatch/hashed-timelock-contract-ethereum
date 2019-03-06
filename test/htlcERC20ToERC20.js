@@ -74,6 +74,10 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
     hashPair = newSecretHashPair()
   })
 
+  // Alice initiates the swap by setting up a transfer of ASEANTokens to Bob
+  // she does not need to worry about Bob unilaterally take ownership of the tokens
+  // without fulfilling his side of the deal, because this transfer is locked by a hashed secret
+  // that only Alice knows at this point
   it('Step 1: Alice sets up a swap with Bob in the ASEANToken contract', async () => {
     const newSwapTx = await newSwap(ASEANToken, htlcAliceToBob, {hashlock: hashPair.hash, timelock: timeLock1Hour}, Alice, Bob)
     a2bSwapId = txContractId(newSwapTx)
@@ -83,6 +87,11 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
     assertTokenBal(ASEANToken, htlcAliceToBob.address, tokenAmount)
   })
 
+  // Bob having observed the contract getting set up by Alice in the ASEANToken, now
+  // responds by setting up the corresponding contract in the EUToken, using the same
+  // hash lock as Alice' side of the deal, so that he can be guaranteed Alice must
+  // disclose the secret to unlock the EUTokens transfer, and the same secret can then
+  // be used to unlock the ASEANToken transfer
   it('Step 2: Bob sets up a swap with Alice in the EUToken contract', async () => {
     // in a real world swap contract, the counterparty's swap timeout period should be shorter
     // but that does not affect the ideal workflow that we are testing here
