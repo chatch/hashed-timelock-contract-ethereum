@@ -37,7 +37,7 @@ module.exports = {
   networks: {
     develop: {
       host: "localhost",
-      port: 8545,
+      port: 7545,
       network_id: "*"
     },
     kovaninfura: infuraConfig("kovan", 42, oneGwei * 2),
