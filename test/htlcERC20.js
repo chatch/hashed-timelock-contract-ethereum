@@ -1,5 +1,5 @@
-import {assertEqualBN} from './helper/assert'
-import {
+const {assertEqualBN} = require('./helper/assert');
+const {
   bufToStr,
   htlcERC20ArrayToObj,
   isSha256Hash,
@@ -8,7 +8,7 @@ import {
   random32,
   txContractId,
   txLoggedArgs,
-} from './helper/utils'
+} = require('./helper/utils');
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const ASEANToken = artifacts.require('./helper/ASEANToken.sol')
