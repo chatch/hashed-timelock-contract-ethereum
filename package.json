@@ -13,13 +13,6 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-kovan-infura": "npm run prepare && truffle migrate --network kovaninfura",
-    "deploy-ropsten-infura": "npm run prepare && truffle migrate --network ropsteninfura",
-    "deploy-rinkeby-infura": "npm run prepare && truffle migrate --network rinkebyinfura",
-    "deploy-kovan": "npm run prepare && truffle migrate --network kovan",
-    "prepare": "npm run publish-abi && npm run test",
-    "prepublish": "npm run publish-abi",
-    "publish-abi": "rm -rf build/ && truffle compile && cp build/contracts/HashedTimelock*.json abi/",
     "test": "truffle test"
   },
   "keywords": [
@@ -30,13 +23,9 @@
   ],
   "homepage": "https://github.com/chatch/hashed-timelock-contract-ethereum#README.md",
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
     "openzeppelin-solidity": "^2.1.2"
   },
   "devDependencies": {
-    "bluebird": "^3.5.1",
     "eslint": "^5.13.0",
     "truffle-hdwallet-provider": "^1.0.3"
   }

@@ -60,7 +60,7 @@ const htlcERC20ArrayToObj = c => {
 
 const getBalance = async (address) => web3.utils.toBN(await web3.eth.getBalance(address))
 
-export {
+module.exports = {
   bufToStr,
   getBalance,
   htlcArrayToObj,
