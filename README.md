@@ -1,6 +1,7 @@
 # hashed-timelock-contract-ethereum
 
 [![NPM Package](https://img.shields.io/npm/v/ethereum-htlc.svg?style=flat-square)](https://www.npmjs.org/package/ethereum-htlc)
+[![Build Status](https://travis-ci.org/chatch/hashed-timelock-contract-ethereum?branch=master)](https://travis-ci.org/chatch/hashed-timelock-contract-ethereum)
 
 [Hashed Timelock Contracts](https://en.bitcoin.it/wiki/Hashed_Timelock_Contracts) (HTLCs) for Ethereum:
 
