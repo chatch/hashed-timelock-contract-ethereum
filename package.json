@@ -38,6 +38,7 @@
   "devDependencies": {
     "bluebird": "^3.5.1",
     "eslint": "^5.13.0",
+    "truffle": "^5.0.8",
     "truffle-hdwallet-provider": "^1.0.3"
   }
 }
