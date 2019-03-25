@@ -23,7 +23,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
  */
 contract HashedTimelockERC20 {
 
-    event LogHTLCERC20New(
+    event HTLCERC20New(
         bytes32 indexed contractId,
         address indexed sender,
         address indexed receiver,
@@ -32,8 +32,8 @@ contract HashedTimelockERC20 {
         bytes32 hashlock,
         uint timelock
     );
-    event LogHTLCERC20Withdraw(bytes32 indexed contractId);
-    event LogHTLCERC20Refund(bytes32 indexed contractId);
+    event HTLCERC20Withdraw(bytes32 indexed contractId);
+    event HTLCERC20Refund(bytes32 indexed contractId);
 
     struct LockContract {
         address sender;
@@ -150,7 +150,7 @@ contract HashedTimelockERC20 {
             0x0
         );
 
-        emit LogHTLCERC20New(
+        emit HTLCERC20New(
             contractId,
             msg.sender,
             _receiver,
@@ -180,7 +180,7 @@ contract HashedTimelockERC20 {
         c.preimage = _preimage;
         c.withdrawn = true;
         ERC20(c.tokenContract).transfer(c.receiver, c.amount);
-        emit LogHTLCERC20Withdraw(_contractId);
+        emit HTLCERC20Withdraw(_contractId);
         return true;
     }
 
@@ -200,7 +200,7 @@ contract HashedTimelockERC20 {
         LockContract storage c = contracts[_contractId];
         c.refunded = true;
         ERC20(c.tokenContract).transfer(c.sender, c.amount);
-        emit LogHTLCERC20Refund(_contractId);
+        emit HTLCERC20Refund(_contractId);
         return true;
     }
 

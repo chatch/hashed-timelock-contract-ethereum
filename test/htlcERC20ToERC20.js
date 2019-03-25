@@ -37,6 +37,11 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
   let learnedSecret
 
   before(async () => {
+    // if both tokens run on the same chain, they can share the HTLC contract to
+    // coordinate the swap. They can also use separate instances on the same chain,
+    // or even separate instances on different chains.
+    // The key is the HTLC contract must be running on the same chain
+    // that the target Token to be transferred between the two counterparties runs on
     htlc = await HashedTimelockERC20.new()
 
     ASEANToken = await ASEANTokenContract.new(tokenSupply)
