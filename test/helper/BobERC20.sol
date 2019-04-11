@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 /**
  * A basic token for testing the HashedTimelockERC20.
  */
-contract EUToken is ERC20 {
+contract BobERC20 is ERC20 {
     string public constant name = "European Union Token";
     string public constant symbol = "EU";
     uint8 public constant decimals = 18;

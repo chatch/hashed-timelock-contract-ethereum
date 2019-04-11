@@ -11,7 +11,7 @@ const {
 } = require('./helper/utils');
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
-const ASEANToken = artifacts.require('./helper/ASEANToken.sol')
+const AliceERC20 = artifacts.require('./helper/AliceERC20.sol')
 
 const REQUIRE_FAILED_MSG = 'Returned error: VM Exception while processing transaction: revert'
 
@@ -38,7 +38,7 @@ contract('HashedTimelockERC20', accounts => {
 
   before(async () => {
     htlc = await HashedTimelockERC20.new()
-    token = await ASEANToken.new(tokenSupply)
+    token = await AliceERC20.new(tokenSupply)
     await token.transfer(sender, senderInitialBalance)
     await assertTokenBal(
       sender,

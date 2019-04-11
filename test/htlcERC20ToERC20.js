@@ -14,26 +14,26 @@ const sleep = promisify(require('timers').setTimeout);
 const truffleAssert = require('truffle-assertions');
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
-const ASEANTokenContract = artifacts.require('./helper/ASEANToken.sol')
-const EUTokenContract = artifacts.require('./helper/EUToken.sol')
+const AliceERC20TokenContract = artifacts.require('./helper/AliceERC20.sol')
+const BobERC20TokenContract = artifacts.require('./helper/BobERC20.sol')
 
 // some testing data
 let timeLock2Sec
 const tokenAmount = 5
 
 contract('HashedTimelock swap between two ERC20 tokens', accounts => {
-  const Alice = accounts[1] // owner of ASEANToken and wants swap for EUToken
-  const Bob = accounts[2] // owner of EUToken and wants to swap for ASEANToken
+  const Alice = accounts[1] // owner of AliceERC20 and wants swap for BobERC20
+  const Bob = accounts[2] // owner of BobERC20 and wants to swap for AliceERC20
 
   const tokenSupply = 1000
   const senderInitialBalance = 100
 
   let htlc
-  let ASEANToken
-  let EUToken
+  let AliceERC20
+  let BobERC20
   let hashPair // shared b/w the two swap contracts in both directions
-  let a2bSwapId // swap contract ID for Alice -> Bob in the ASEANToken
-  let b2aSwapId // swap contract ID for Bob -> Alice in the EUToken
+  let a2bSwapId // swap contract ID for Alice -> Bob in the AliceERC20
+  let b2aSwapId // swap contract ID for Bob -> Alice in the BobERC20
   // use a variable to track the secret Bob will have learned from Alice's withdraw transaction
   // to make the flow more explicitly reflect the real world sequence of events
   let learnedSecret
@@ -46,71 +46,71 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
     // that the target Token to be transferred between the two counterparties runs on
     htlc = await HashedTimelockERC20.new()
 
-    ASEANToken = await ASEANTokenContract.new(tokenSupply)
-    EUToken = await EUTokenContract.new(tokenSupply)
-    await ASEANToken.transfer(Alice, senderInitialBalance) // so Alice has some tokens to trade
-    await EUToken.transfer(Bob, senderInitialBalance) // so Bob has some tokens to trade
+    AliceERC20 = await AliceERC20TokenContract.new(tokenSupply)
+    BobERC20 = await BobERC20TokenContract.new(tokenSupply)
+    await AliceERC20.transfer(Alice, senderInitialBalance) // so Alice has some tokens to trade
+    await BobERC20.transfer(Bob, senderInitialBalance) // so Bob has some tokens to trade
 
     await assertTokenBal(
-      ASEANToken,
+      AliceERC20,
       Alice,
       senderInitialBalance,
       'balance not transferred to Alice in before()'
     )
     await assertTokenBal(
-      ASEANToken,
+      AliceERC20,
       Bob,
       0,
-      'Bob should not have any ASEANTokens in before()'
+      'Bob should not have any AliceERC20 tokens in before()'
     )
     await assertTokenBal(
-      EUToken,
+      BobERC20,
       Bob,
       senderInitialBalance,
       'balance not transferred to Bob in before()'
     )
     await assertTokenBal(
-      EUToken,
+      BobERC20,
       Alice,
       0,
-      'Alice should not have any EUTokens in before()'
+      'Alice should not have any BobERC20 tokens in before()'
     )
 
     hashPair = newSecretHashPair()
   })
 
-  // Alice initiates the swap by setting up a transfer of ASEANTokens to Bob
+  // Alice initiates the swap by setting up a transfer of AliceERC20 tokens to Bob
   // she does not need to worry about Bob unilaterally take ownership of the tokens
   // without fulfilling his side of the deal, because this transfer is locked by a hashed secret
   // that only Alice knows at this point
-  it('Step 1: Alice sets up a swap with Bob in the ASEANToken contract', async () => {
+  it('Step 1: Alice sets up a swap with Bob in the AliceERC20 contract', async () => {
     timeLock2Sec = nowSeconds() + 2
-    const newSwapTx = await newSwap(ASEANToken, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Alice, Bob)
+    const newSwapTx = await newSwap(AliceERC20, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Alice, Bob)
     a2bSwapId = txContractId(newSwapTx)
 
     // check token balances
-    assertTokenBal(ASEANToken, Alice, senderInitialBalance - tokenAmount)
-    assertTokenBal(ASEANToken, htlc.address, tokenAmount)
+    assertTokenBal(AliceERC20, Alice, senderInitialBalance - tokenAmount)
+    assertTokenBal(AliceERC20, htlc.address, tokenAmount)
   })
 
-  // Bob having observed the contract getting set up by Alice in the ASEANToken, now
-  // responds by setting up the corresponding contract in the EUToken, using the same
+  // Bob having observed the contract getting set up by Alice in the AliceERC20, now
+  // responds by setting up the corresponding contract in the BobERC20, using the same
   // hash lock as Alice' side of the deal, so that he can be guaranteed Alice must
-  // disclose the secret to unlock the EUTokens transfer, and the same secret can then
-  // be used to unlock the ASEANToken transfer
-  it('Step 2: Bob sets up a swap with Alice in the EUToken contract', async () => {
+  // disclose the secret to unlock the BobERC20 tokens transfer, and the same secret can then
+  // be used to unlock the AliceERC20 transfer
+  it('Step 2: Bob sets up a swap with Alice in the BobERC20 contract', async () => {
     // in a real world swap contract, the counterparty's swap timeout period should be shorter
     // but that does not affect the ideal workflow that we are testing here
     timeLock2Sec = nowSeconds() + 2
-    const newSwapTx = await newSwap(EUToken, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Bob, Alice)
+    const newSwapTx = await newSwap(BobERC20, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Bob, Alice)
     b2aSwapId = txContractId(newSwapTx)
 
     // check token balances
-    assertTokenBal(EUToken, Bob, senderInitialBalance - tokenAmount)
-    assertTokenBal(EUToken, htlc.address, tokenAmount)
+    assertTokenBal(BobERC20, Bob, senderInitialBalance - tokenAmount)
+    assertTokenBal(BobERC20, htlc.address, tokenAmount)
   })
 
-  it('Step 3: Alice as the initiator withdraws from the EUToken with the secret', async () => {
+  it('Step 3: Alice as the initiator withdraws from the BobERC20 with the secret', async () => {
     // Alice has the original secret, calls withdraw with the secret to claim the EU tokens
     await htlc.withdraw(b2aSwapId, hashPair.secret, {
       from: Alice,
@@ -118,7 +118,7 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
 
     // Check tokens now owned by Alice
     await assertTokenBal(
-      EUToken,
+      BobERC20,
       Alice,
       tokenAmount,
       `Alice doesn't not own ${tokenAmount} tokens`
@@ -134,14 +134,14 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
     learnedSecret = contract.preimage
   })
 
-  it("Step 4: Bob as the counterparty withdraws from the ASEANToken with the secret learned from Alice's withdrawal", async () => {
+  it("Step 4: Bob as the counterparty withdraws from the AliceERC20 with the secret learned from Alice's withdrawal", async () => {
     await htlc.withdraw(a2bSwapId, learnedSecret, {
       from: Bob,
     })
 
     // Check tokens now owned by Bob
     await assertTokenBal(
-      ASEANToken,
+      AliceERC20,
       Bob,
       tokenAmount,
       `Bob doesn't not own ${tokenAmount} tokens`
@@ -168,14 +168,14 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
 
     it('the swap is set up with 5sec timeout on both sides', async () => {
       timeLock2Sec = nowSeconds() + 2
-      let newSwapTx = await newSwap(ASEANToken, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Alice, Bob)
+      let newSwapTx = await newSwap(AliceERC20, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Alice, Bob)
       a2bSwapId = txContractId(newSwapTx);
 
-      newSwapTx = await newSwap(EUToken, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Bob, Alice)
+      newSwapTx = await newSwap(BobERC20, htlc, {hashlock: hashPair.hash, timelock: timeLock2Sec}, Bob, Alice)
       b2aSwapId = txContractId(newSwapTx)
 
-      assertTokenBal(ASEANToken, htlc.address, tokenAmount);
-      assertTokenBal(EUToken, htlc.address, tokenAmount);
+      assertTokenBal(AliceERC20, htlc.address, tokenAmount);
+      assertTokenBal(BobERC20, htlc.address, tokenAmount);
 
       await sleep(2000);
 
@@ -189,7 +189,7 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
         return ev.contractId === a2bSwapId;
       }, `Refunded Alice`);
 
-      await assertTokenBal(ASEANToken, Alice, currentBalanceAlice);
+      await assertTokenBal(AliceERC20, Alice, currentBalanceAlice);
 
       // Bob can also get his tokens back by calling refund()
       result = await htlc.refund(b2aSwapId, {
@@ -201,7 +201,7 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
         return ev.contractId === b2aSwapId;
       }, `Refunded Bob`);
 
-      assertTokenBal(EUToken, Bob, currentBalanceBob);
+      assertTokenBal(BobERC20, Bob, currentBalanceBob);
     });
   })
 

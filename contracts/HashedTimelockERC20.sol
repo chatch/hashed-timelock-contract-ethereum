@@ -28,9 +28,9 @@ contract HashedTimelockERC20 {
         address indexed sender,
         address indexed receiver,
         address tokenContract,
-        uint amount,
+        uint256 amount,
         bytes32 hashlock,
-        uint timelock
+        uint256 timelock
     );
     event HTLCERC20Withdraw(bytes32 indexed contractId);
     event HTLCERC20Refund(bytes32 indexed contractId);
@@ -39,15 +39,15 @@ contract HashedTimelockERC20 {
         address sender;
         address receiver;
         address tokenContract;
-        uint amount;
+        uint256 amount;
         bytes32 hashlock;
-        uint timelock; // UNIX timestamp seconds - locked UNTIL this time
+        uint256 timelock; // locked UNTIL this time. Unit depends on consensus algorithm. PoA, PoA and IBFT all use seconds. But Quorum Raft uses nano-seconds
         bool withdrawn;
         bool refunded;
         bytes32 preimage;
     }
 
-    modifier tokensTransferable(address _token, address _sender, uint _amount) {
+    modifier tokensTransferable(address _token, address _sender, uint256 _amount) {
         require(_amount > 0, "token amount must be > 0");
         require(
             ERC20(_token).allowance(_sender, address(this)) >= _amount,
@@ -55,7 +55,7 @@ contract HashedTimelockERC20 {
         );
         _;
     }
-    modifier futureTimelock(uint _time) {
+    modifier futureTimelock(uint256 _time) {
         // only requirement is the timelock time is after the last blocktime (now).
         // probably want something a bit further in the future then this.
         // but this is still a useful sanity check:
@@ -108,9 +108,9 @@ contract HashedTimelockERC20 {
     function newContract(
         address _receiver,
         bytes32 _hashlock,
-        uint _timelock,
+        uint256 _timelock,
         address _tokenContract,
-        uint _amount
+        uint256 _amount
     )
         external
         tokensTransferable(_tokenContract, msg.sender, _amount)
@@ -216,9 +216,9 @@ contract HashedTimelockERC20 {
             address sender,
             address receiver,
             address tokenContract,
-            uint amount,
+            uint256 amount,
             bytes32 hashlock,
-            uint timelock,
+            uint256 timelock,
             bool withdrawn,
             bool refunded,
             bytes32 preimage
