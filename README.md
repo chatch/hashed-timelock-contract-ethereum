@@ -125,7 +125,7 @@ See [test/htlcERC20.js](test/htlcERC20.js) for examples of interacting with the 
 
 ## ABI and Bytecode
 
-- [HashedTimelock.json](abi/HashedTimelock.json)
-- [HashedTimelockERC20.json](abi/HashedTimelockERC20.json)
-- [HashedTimelockERC721.json](abi/HashedTimelockERC721.json)
+- [HashedTimelock.json](build/contracts/HashedTimelock.json)
+- [HashedTimelockERC20.json](build/contracts/HashedTimelockERC20.json)
+- [HashedTimelockERC721.json](build/contracts/HashedTimelockERC721.json)
 
