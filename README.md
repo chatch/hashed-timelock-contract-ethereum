@@ -123,9 +123,4 @@ See [test/htlcERC20.js](test/htlcERC20.js) for examples of interacting with the 
 2.  `withdraw(contractId, preimage)` claim funds revealing the preimage
 3.  `refund(contractId)` if withdraw was not called the contract creator can get a refund by calling this some time after the time lock has expired.
 
-## ABI and Bytecode
-
-- [HashedTimelock.json](build/contracts/HashedTimelock.json)
-- [HashedTimelockERC20.json](build/contracts/HashedTimelockERC20.json)
-- [HashedTimelockERC721.json](build/contracts/HashedTimelockERC721.json)
 
