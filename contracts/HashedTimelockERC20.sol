@@ -18,7 +18,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 *  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
 *      the hashlock hash they can claim the tokens with this function
 *  3) refund() - after timelock has expired and if the receiver did not 
-*      withdraw the tokens the sender / creater of the HTLC can get their tokens 
+*      withdraw the tokens the sender / creator of the HTLC can get their tokens 
 *      back with this function.
  */
 contract HashedTimelockERC20 {
