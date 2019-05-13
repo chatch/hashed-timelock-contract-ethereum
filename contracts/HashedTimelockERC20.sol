@@ -78,7 +78,8 @@ contract HashedTimelockERC20 {
     modifier withdrawable(bytes32 _contractId) {
         require(contracts[_contractId].receiver == msg.sender, "withdrawable: not receiver");
         require(contracts[_contractId].withdrawn == false, "withdrawable: already withdrawn");
-        require(contracts[_contractId].timelock > now, "withdrawable: timelock time must be in the future");
+        // if we want to allow claim to be made after the timeout, uncomment the following line
+        // require(contracts[_contractId].timelock > now, "withdrawable: timelock time must be in the future");
         _;
     }
     modifier refundable(bytes32 _contractId) {
