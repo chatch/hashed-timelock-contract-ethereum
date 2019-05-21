@@ -6,6 +6,7 @@
 
 - [HashedTimelock.sol](contracts/HashedTimelock.sol) - HTLC for native ETH token
 - [HashedTimelockERC20.sol](contracts/HashedTimelockERC20.sol) - HTLC for ERC20 tokens
+- [HashedTimelockERC721.sol](contracts/HashedTimelockERC721.sol) - HTLC for ERC721 tokens
 
 Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
