@@ -15,4 +15,4 @@ const assertEqualBN = (actual, expected, msg = 'numbers not equal') => {
   )
 }
 
-export {assertEqualBN}
+module.exports = {assertEqualBN};
