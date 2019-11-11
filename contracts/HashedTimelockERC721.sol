@@ -7,18 +7,18 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 *
 * This contract provides a way to create and keep HTLCs for ERC721 tokens.
 *
-* See HashedTimelock.sol for a contract that provides the same functions 
+* See HashedTimelock.sol for a contract that provides the same functions
 * for the native ETH token.
 *
 * Protocol:
 *
-*  1) newContract(receiver, hashlock, timelock, tokenContract, tokenId) - a 
-*      sender calls this to create a new HTLC on a given token (tokenContract) 
+*  1) newContract(receiver, hashlock, timelock, tokenContract, tokenId) - a
+*      sender calls this to create a new HTLC on a given token (tokenContract)
 *       for a given token ID. A 32 byte contract id is returned
 *  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
 *      the hashlock hash they can claim the tokens with this function
-*  3) refund() - after timelock has expired and if the receiver did not 
-*      withdraw the tokens the sender / creater of the HTLC can get their tokens 
+*  3) refund() - after timelock has expired and if the receiver did not
+*      withdraw the tokens the sender / creater of the HTLC can get their tokens
 *      back with this function.
  */
 contract HashedTimelockERC721 {
@@ -41,7 +41,9 @@ contract HashedTimelockERC721 {
         address tokenContract;
         uint256 tokenId;
         bytes32 hashlock;
-        uint256 timelock; // locked UNTIL this time. Unit depends on consensus algorithm. PoA, PoA and IBFT all use seconds. But Quorum Raft uses nano-seconds
+        // locked UNTIL this time. Unit depends on consensus algorithm.
+        // PoA, PoA and IBFT all use seconds. But Quorum Raft uses nano-seconds
+        uint256 timelock;
         bool withdrawn;
         bool refunded;
         bytes32 preimage;
@@ -52,7 +54,7 @@ contract HashedTimelockERC721 {
         // so that it is able to honor the claim request later
         require(
             ERC721(_token).getApproved(_tokenId) == address(this),
-            "The HTLC contract must have been designated an approved spender for the tokenId"
+            "The HTLC must have been designated an approved spender for the tokenId"
         );
         _;
     }
@@ -95,16 +97,16 @@ contract HashedTimelockERC721 {
      * @dev Sender / Payer sets up a new hash time lock contract depositing the
      * funds and providing the reciever and terms.
      *
-     * NOTE: _receiver must first call approve() on the token contract. 
+     * NOTE: _receiver must first call approve() on the token contract.
      *       See isApprovedOrOwner check in tokensTransferable modifier.
 
      * @param _receiver Receiver of the tokens.
      * @param _hashlock A sha-2 sha256 hash hashlock.
-     * @param _timelock UNIX epoch seconds time that the lock expires at. 
+     * @param _timelock UNIX epoch seconds time that the lock expires at.
      *                  Refunds can be made after this time.
      * @param _tokenContract ERC20 Token contract address.
      * @param _tokenId Id of the token to lock up.
-     * @return contractId Id of the new HTLC. This is needed for subsequent 
+     * @return contractId Id of the new HTLC. This is needed for subsequent
      *                    calls.
      */
     function newContract(
@@ -134,7 +136,7 @@ contract HashedTimelockERC721 {
         // sender must change one of these parameters (ideally providing a
         // different _hashlock).
         if (haveContract(contractId))
-            revert();
+            revert("Contract already exists");
 
         // This contract becomes the temporary owner of the token
         ERC721(_tokenContract).transferFrom(msg.sender, address(this), _tokenId);

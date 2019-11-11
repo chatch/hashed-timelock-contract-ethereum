@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
  *
  * This contract provides a way to create and keep HTLCs for ETH.
  *
- * See HashedTimelockERC20.sol for a contract that provides the same functions 
+ * See HashedTimelockERC20.sol for a contract that provides the same functions
  * for ERC20 tokens.
  *
  * Protocol:
@@ -14,8 +14,8 @@ pragma solidity ^0.5.0;
  *      a new HTLC and gets back a 32 byte contract id
  *  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
  *      the hashlock hash they can claim the ETH with this function
- *  3) refund() - after timelock has expired and if the receiver did not 
- *      withdraw funds the sender / creator of the HTLC can get their ETH 
+ *  3) refund() - after timelock has expired and if the receiver did not
+ *      withdraw funds the sender / creator of the HTLC can get their ETH
  *      back with this function.
  */
 contract HashedTimelock {
@@ -81,14 +81,14 @@ contract HashedTimelock {
     mapping (bytes32 => LockContract) contracts;
 
     /**
-     * @dev Sender sets up a new hash time lock contract depositing the ETH and 
+     * @dev Sender sets up a new hash time lock contract depositing the ETH and
      * providing the reciever lock terms.
      *
      * @param _receiver Receiver of the ETH.
      * @param _hashlock A sha-2 sha256 hash hashlock.
-     * @param _timelock UNIX epoch seconds time that the lock expires at. 
+     * @param _timelock UNIX epoch seconds time that the lock expires at.
      *                  Refunds can be made after this time.
-     * @return contractId Id of the new HTLC. This is needed for subsequent 
+     * @return contractId Id of the new HTLC. This is needed for subsequent
      *                    calls.
      */
     function newContract(address payable _receiver, bytes32 _hashlock, uint _timelock)
@@ -109,10 +109,10 @@ contract HashedTimelock {
         );
 
         // Reject if a contract already exists with the same parameters. The
-        // sender must change one of these parameters to create a new distinct 
+        // sender must change one of these parameters to create a new distinct
         // contract.
         if (haveContract(contractId))
-            revert();
+            revert("Contract already exists");
 
         contracts[contractId] = LockContract(
             msg.sender,
@@ -200,8 +200,16 @@ contract HashedTimelock {
         if (haveContract(_contractId) == false)
             return (address(0), address(0), 0, 0, 0, false, false, 0);
         LockContract storage c = contracts[_contractId];
-        return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
-                c.withdrawn, c.refunded, c.preimage);
+        return (
+            c.sender,
+            c.receiver,
+            c.amount,
+            c.hashlock,
+            c.timelock,
+            c.withdrawn,
+            c.refunded,
+            c.preimage
+        );
     }
 
     /**

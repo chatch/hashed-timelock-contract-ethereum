@@ -14,6 +14,7 @@
   },
   "scripts": {
     "ganache-start": "ganache-cli --networkId 4447 --port 7545",
+    "lint": "solium -d contracts/",
     "test": "truffle test"
   },
   "keywords": [
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "eslint": "^5.13.0",
+    "ethlint": "^1.2.5",
     "ganache-cli": "^6.7.0",
     "truffle": "^5.0.8",
     "truffle-assertions": "^0.8.2",
