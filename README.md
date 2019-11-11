@@ -7,23 +7,79 @@
 
 - [HashedTimelock.sol](contracts/HashedTimelock.sol) - HTLC for native ETH token
 - [HashedTimelockERC20.sol](contracts/HashedTimelockERC20.sol) - HTLC for ERC20 tokens
+- [HashedTimelockERC721.sol](contracts/HashedTimelockERC721.sol) - HTLC for ERC721 tokens
 
 Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
-## Deployment
+## Run Tests
+* Install truffle
+* Install ganache [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
+* Launch and set the network ID to `4447`
 
-HashedTimelock:
+```
+$ npm i
+$ truffle test
+Using network 'test'.
 
-- Kovan: [0xe196bb1e25483ed771b6691929d47943023c26fe](https://kovan.etherscan.io/address/0xe196bb1e25483ed771b6691929d47943023c26fe)
-- Ropsten:
-  [0x243785f6b65418191ea20b45fde7069ffe4f8cef](https://ropsten.etherscan.io/address/0x243785f6b65418191ea20b45fde7069ffe4f8cef)
-- Mainnet: <not deployed yet ...>
+Compiling ./test/helper/ASEANToken.sol...
+Compiling ./test/helper/EUToken.sol...
 
-HashedTimelockERC20:
 
-- Kovan: [0x763eedd3c04a9a2fca67ac51fc16e394472f29a2](https://kovan.etherscan.io/address/0x763eedd3c04a9a2fca67ac51fc16e394472f29a2)
-- Ropsten: [0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7](https://ropsten.etherscan.io/address/0x16b6fabc530c7bfde69eafd9e271fb610e3fc3f7)
-- Mainnet: <not deployed yet ...>
+  Contract: HashedTimelock
+    ✓ newContract() should create new contract and store correct details (92ms)
+    ✓ newContract() should fail when no ETH sent (84ms)
+    ✓ newContract() should fail with timelocks in the past (78ms)
+    ✓ newContract() should reject a duplicate contract request (159ms)
+    ✓ withdraw() should send receiver funds when given the correct secret preimage (214ms)
+    ✓ withdraw() should fail if preimage does not hash to hashX (111ms)
+    ✓ withdraw() should fail if caller is not the receiver (162ms)
+    ✓ withdraw() should fail after timelock expiry (1243ms)
+    ✓ refund() should pass after timelock expiry (1273ms)
+    ✓ refund() should fail before the timelock expiry (132ms)
+    ✓ getContract() returns empty record when contract doesn't exist (48ms)
+
+  Contract: HashedTimelockERC20
+    ✓ newContract() should create new contract and store correct details (214ms)
+    ✓ newContract() should fail when no token transfer approved (107ms)
+    ✓ newContract() should fail when token amount is 0 (166ms)
+    ✓ newContract() should fail when tokens approved for some random account (214ms)
+    ✓ newContract() should fail when the timelock is in the past (136ms)
+    ✓ newContract() should reject a duplicate contract request (282ms)
+    ✓ withdraw() should send receiver funds when given the correct secret preimage (363ms)
+    ✓ withdraw() should fail if preimage does not hash to hashX (227ms)
+    ✓ withdraw() should fail if caller is not the receiver  (307ms)
+    ✓ withdraw() should fail after timelock expiry (2257ms)
+    ✓ refund() should pass after timelock expiry (2407ms)
+    ✓ refund() should fail before the timelock expiry (283ms)
+    ✓ getContract() returns empty record when contract doesn't exist (55ms)
+
+  Contract: HashedTimelock swap between two ERC20 tokens
+    ✓ Step 1: Alice sets up a swap with Bob in the AliceERC20 contract (233ms)
+    ✓ Step 2: Bob sets up a swap with Alice in the BobERC20 contract (239ms)
+    ✓ Step 3: Alice as the initiator withdraws from the BobERC20 with the secret (97ms)
+    ✓ Step 4: Bob as the counterparty withdraws from the AliceERC20 with the secret learned from Alice's withdrawal (144ms)
+    Test the refund scenario:
+      ✓ the swap is set up with 5sec timeout on both sides (3613ms)
+
+  Contract: HashedTimelock swap between ERC721 token and ERC20 token (Delivery vs. Payment)
+    ✓ Step 1: Alice sets up a swap with Bob to transfer the Commodity token #1 (256ms)
+    ✓ Step 2: Bob sets up a swap with Alice in the payment contract (231ms)
+    ✓ Step 3: Alice as the initiator withdraws from the BobERC721 with the secret (95ms)
+    ✓ Step 4: Bob as the counterparty withdraws from the AliceERC721 with the secret learned from Alice's withdrawal (132ms)
+    Test the refund scenario:
+      ✓ the swap is set up with 5sec timeout on both sides (3737ms)
+
+  Contract: HashedTimelock swap between two ERC721 tokens
+    ✓ Step 1: Alice sets up a swap with Bob in the AliceERC721 contract (225ms)
+    ✓ Step 2: Bob sets up a swap with Alice in the BobERC721 contract (265ms)
+    ✓ Step 3: Alice as the initiator withdraws from the BobERC721 with the secret (131ms)
+    ✓ Step 4: Bob as the counterparty withdraws from the AliceERC721 with the secret learned from Alice's withdrawal (119ms)
+    Test the refund scenario:
+      ✓ the swap is set up with 5sec timeout on both sides (3635ms)
+
+
+  39 passing (27s)
+```
 
 ## Protocol - Native ETH
 
@@ -63,7 +119,10 @@ See [test/htlc.js](test/htlc.js) for examples of interacting with the contract f
 
 See [test/htlcERC20.js](test/htlcERC20.js) for examples of interacting with the contract from javascript.
 
-## ABI and Bytecode
+### HashedTimelockERC721
 
-- [HashedTimelock.json](abi/HashedTimelock.json)
-- [HashedTimelockERC20.json](abi/HashedTimelockERC20.json)
+1.  `newContract(receiverAddress, hashlock, timelock, tokenContract, tokenId)` create new HTLC with given receiver, hashlock, expiry, ERC20 token contract address and the token to transfer
+2.  `withdraw(contractId, preimage)` claim funds revealing the preimage
+3.  `refund(contractId)` if withdraw was not called the contract creator can get a refund by calling this some time after the time lock has expired.
+
+

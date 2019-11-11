@@ -1,7 +1,5 @@
-import Promise from 'bluebird'
-
-import {assertEqualBN} from './helper/assert'
-import {
+const {assertEqualBN} = require('./helper/assert');
+const {
   bufToStr,
   getBalance,
   htlcArrayToObj,
@@ -12,7 +10,7 @@ import {
   txContractId,
   txGas,
   txLoggedArgs,
-} from './helper/utils'
+} = require('./helper/utils')
 
 const HashedTimelock = artifacts.require('./HashedTimelock.sol')
 
