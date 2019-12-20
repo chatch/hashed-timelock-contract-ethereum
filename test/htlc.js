@@ -1,4 +1,4 @@
-const {assertEqualBN} = require('./helper/assert');
+const {assertEqualBN} = require('./helper/assert')
 const {
   bufToStr,
   getBalance,

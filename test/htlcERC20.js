@@ -1,4 +1,4 @@
-const {assertEqualBN} = require('./helper/assert');
+const {assertEqualBN} = require('./helper/assert')
 const {
   bufToStr,
   htlcERC20ArrayToObj,
@@ -8,7 +8,7 @@ const {
   random32,
   txContractId,
   txLoggedArgs,
-} = require('./helper/utils');
+} = require('./helper/utils')
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const AliceERC20 = artifacts.require('./helper/AliceERC20.sol')
