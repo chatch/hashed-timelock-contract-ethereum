@@ -1,4 +1,4 @@
-import {BaseWrapper} from "./base-wrapper";
+import {BaseWrapper} from "./base-wrapper"
 
 /**
  * This wrapper can be used for already deployed contracts sharing the main interfaces of HTLCs.
@@ -12,7 +12,7 @@ export class HtlcWrapper extends BaseWrapper {
    */
   newContract(receiverAddress, hashlock, timelock) {
     return this.getContractInstance().then((instance) => {
-      return instance.newContract(receiverAddress, hashlock, timelock);
-    });
+      return instance.newContract(receiverAddress, hashlock, timelock)
+    })
   }
 }

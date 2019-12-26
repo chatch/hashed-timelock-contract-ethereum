@@ -20,7 +20,12 @@
   },
   "rules": {
     "no-console": "off",
-    "no-unused-vars": ["warn"],
-    "semi": ["error", "always"]
+    "no-unused-vars": [
+      "warn"
+    ],
+    "semi": [
+      "error",
+      "never"
+    ]
   }
 }

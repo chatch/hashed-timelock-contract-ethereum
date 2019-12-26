@@ -1,7 +1,7 @@
 export class BaseWrapper {
-  contract = require("@truffle/contract");
-  hashedTimelockContract;
-  address;
+  contract = require("@truffle/contract")
+  hashedTimelockContract
+  address
 
   /**
    * For additional information concerning the constructor parameters,
@@ -9,14 +9,14 @@ export class BaseWrapper {
    * Necessary parameters for the constructor are @param contractJson, @param provider, and @param shouldDeploy.
    */
   constructor(contractJson, provider, optionalAddress, shouldDeploy, deployCallback, argArray, txParams) {
-    this.hashedTimelockContract = this.contract(contractJson);
-    this.hashedTimelockContract.setProvider(provider);
-    this.address = optionalAddress;
+    this.hashedTimelockContract = this.contract(contractJson)
+    this.hashedTimelockContract.setProvider(provider)
+    this.address = optionalAddress
     if (shouldDeploy) {
       this.hashedTimelockContract.new(argArray, txParams).then((instance) => {
         // should call setAddress here
-        deployCallback(instance);
-      });
+        deployCallback(instance)
+      })
     }
   }
 
@@ -26,8 +26,8 @@ export class BaseWrapper {
    */
   withdraw(contractId, preimage) {
     return this.getContractInstance().then((instance) => {
-      return instance.withdraw(contractId, preimage);
-    });
+      return instance.withdraw(contractId, preimage)
+    })
   }
 
   /**
@@ -35,8 +35,8 @@ export class BaseWrapper {
    */
   refund(contractId) {
     return this.getContractInstance().then((instance) => {
-      return instance.refund(contractId);
-    });
+      return instance.refund(contractId)
+    })
   }
 
   /**
@@ -45,8 +45,8 @@ export class BaseWrapper {
   getContract(contractId) {
     return this.getContractInstance().then((instance) => {
       // truffle should know using a call here
-      return instance.getContract(contractId);
-    });
+      return instance.getContract(contractId)
+    })
   }
 
   /**
@@ -54,18 +54,18 @@ export class BaseWrapper {
    */
   haveContract(contractId) {
     return this.getContractInstance().then((instance) => {
-      return instance.haveContract(contractId);
-    });
+      return instance.haveContract(contractId)
+    })
   }
 
   getContractInstance() {
     if (this.address !== undefined) {
-      return this.hashedTimelockContract.at(this.address);
+      return this.hashedTimelockContract.at(this.address)
     }
-    return this.hashedTimelockContract.deployed();
+    return this.hashedTimelockContract.deployed()
   }
 
   setAddress(address) {
-    this.address = address;
+    this.address = address
   }
 }
