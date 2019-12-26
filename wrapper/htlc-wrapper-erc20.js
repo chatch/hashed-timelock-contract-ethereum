@@ -1,9 +1,9 @@
-import {BaseWrapper} from "./base-wrapper"
+import {BaseWrapper} from "./base-wrapper";
 
 /**
  * This wrapper can be used for already deployed contracts sharing the main interfaces of HTLCs.
  */
-export class HtlcErc20Wrapper extends BaseWrapper{
+export class HtlcErc20Wrapper extends BaseWrapper {
   /**
    * Returns the contract ID.
    * @param receiverAddress address
