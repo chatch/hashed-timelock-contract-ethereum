@@ -1,9 +1,9 @@
-import {BaseWrapper} from "./base-wrapper"
+const BaseWrapper = require('./base-wrapper')
 
 /**
  * This wrapper can be used for already deployed contracts sharing the main interfaces of HTLCs.
  */
-export class HtlcErc20Wrapper extends BaseWrapper {
+class HtlcErc20Wrapper extends BaseWrapper {
   /**
    * Returns the contract ID.
    * @param receiverAddress address
@@ -11,10 +11,15 @@ export class HtlcErc20Wrapper extends BaseWrapper {
    * @param timelock uint
    * @param tokenContract address
    * @param amount uint
+   * @param sender address
    */
-  newContract(receiverAddress, hashlock, timelock, tokenContract, amount) {
+  newContract(receiverAddress, hashlock, timelock, tokenContract, amount, sender) {
     return this.getContractInstance().then((instance) => {
-      return instance.newContract(receiverAddress, hashlock, timelock, tokenContract, amount)
+      return instance.newContract(receiverAddress, hashlock, timelock, tokenContract, {
+        from: sender
+      })
     })
   }
 }
+
+module.exports = HtlcErc20Wrapper

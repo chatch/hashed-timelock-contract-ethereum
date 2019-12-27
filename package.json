@@ -1,6 +1,6 @@
 {
   "name": "ethereum-htlc",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Hashed Timelock Contracts for Ethereum",
   "main": "truffle.js",
   "license": "GPL-3.0",
@@ -16,7 +16,7 @@
     "ganache-start": "ganache-cli --networkId 4447 --port 7545",
     "lint": "solium -d contracts/",
     "test": "truffle test",
-    "ethereum-htlc": "TODO"
+    "ethereum-htlc": "truffle compile"
   },
   "keywords": [
     "ethereum",

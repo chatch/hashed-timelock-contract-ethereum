@@ -1,41 +1,38 @@
-export class BaseWrapper {
-  contract = require("@truffle/contract")
-  hashedTimelockContract
-  address
+const contract = require("@truffle/contract")
 
+class BaseWrapper {
   /**
    * For additional information concerning the constructor parameters,
    * @see https://www.npmjs.com/package/@truffle/contract
    * Necessary parameters for the constructor are @param contractJson, @param provider, and @param shouldDeploy.
+   *
    */
-  constructor(contractJson, provider, optionalAddress, shouldDeploy, deployCallback, argArray, txParams) {
-    this.hashedTimelockContract = this.contract(contractJson)
-    this.hashedTimelockContract.setProvider(provider)
-    this.address = optionalAddress
-    if (shouldDeploy) {
-      this.hashedTimelockContract.new(argArray, txParams).then((instance) => {
-        // should call setAddress here
-        deployCallback(instance)
-      })
+  constructor(contractJson, provider, optionalAddress) {
+    this.hashedTimelockContract = contract(contractJson)
+    if (provider !== null) {
+      this.hashedTimelockContract.setProvider(provider)
     }
+    this.address = optionalAddress
   }
 
   /**
    * @param contractId bytes32
    * @param preimage bytes32
+   * @param receiver address
    */
-  withdraw(contractId, preimage) {
+  withdraw(contractId, preimage, receiver) {
     return this.getContractInstance().then((instance) => {
-      return instance.withdraw(contractId, preimage)
+      return instance.withdraw(contractId, preimage, {from: receiver})
     })
   }
 
   /**
    * @param contractId bytes 32
+   * @param sender address
    */
-  refund(contractId) {
+  refund(contractId, sender) {
     return this.getContractInstance().then((instance) => {
-      return instance.refund(contractId)
+      return instance.refund(contractId, {from: sender})
     })
   }
 
@@ -49,17 +46,8 @@ export class BaseWrapper {
     })
   }
 
-  /**
-   * @param contractId bytes 32
-   */
-  haveContract(contractId) {
-    return this.getContractInstance().then((instance) => {
-      return instance.haveContract(contractId)
-    })
-  }
-
   getContractInstance() {
-    if (this.address !== undefined) {
+    if (this.address !== undefined && this.address !== null) {
       return this.hashedTimelockContract.at(this.address)
     }
     return this.hashedTimelockContract.deployed()
@@ -68,4 +56,10 @@ export class BaseWrapper {
   setAddress(address) {
     this.address = address
   }
+
+  static deployContract(contractJson, argArray, txParams) {
+    return contractJson.new(argArray, txParams);
+  }
 }
+
+module.exports = BaseWrapper
