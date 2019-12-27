@@ -15,7 +15,7 @@ class HtlcErc20Wrapper extends BaseWrapper {
    */
   newContract(receiverAddress, hashlock, timelock, tokenContract, amount, sender) {
     return this.getContractInstance().then((instance) => {
-      return instance.newContract(receiverAddress, hashlock, timelock, tokenContract, {
+      return instance.newContract(receiverAddress, hashlock, timelock, tokenContract, amount, {
         from: sender
       })
     })

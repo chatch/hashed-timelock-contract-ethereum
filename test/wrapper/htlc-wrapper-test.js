@@ -139,12 +139,12 @@ contract('HashedTimelockWrapper', accounts => {
     const address = await HtlcWrapper.deployContract(HashedTimelock, null, null)
     htlcWrapper.setAddress(address.address)
 
-    const timelock1Second = nowSeconds() + 1
+    const timelock10Minutes = nowSeconds() + 600
 
     await htlcWrapper.newContract(
       receiver,
       hashPair.hash,
-      timelock1Second,
+      timelock10Minutes,
       sender,
       oneFinney
     )
