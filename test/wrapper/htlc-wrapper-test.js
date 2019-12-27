@@ -25,7 +25,7 @@ contract('HashedTimelockWrapper', accounts => {
 
   it('newContract() and getContract() in wrapper should create new contract and store correct details', async () => {
     const hashPair = newSecretHashPair()
-    const htlcWrapper = new HtlcWrapper(HashedTimelock, provider, null, false, null, null, null)
+    const htlcWrapper = new HtlcWrapper(HashedTimelock, provider, null)
     const txReceipt = await htlcWrapper.newContract(
       receiver,
       hashPair.hash,
