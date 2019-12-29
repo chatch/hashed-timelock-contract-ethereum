@@ -1,4 +1,4 @@
-const {assertEqualBN} = require('./helper/assert');
+const {assertEqualBN} = require('./helper/assert')
 const {
   bufToStr,
   htlcERC20ArrayToObj,
@@ -8,10 +8,10 @@ const {
   random32,
   txContractId,
   txLoggedArgs,
-} = require('./helper/utils');
-const promisify = require('util').promisify;
-const sleep = promisify(require('timers').setTimeout);
-const truffleAssert = require('truffle-assertions');
+} = require('./helper/utils')
+const promisify = require('util').promisify
+const sleep = promisify(require('timers').setTimeout)
+const truffleAssert = require('truffle-assertions')
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const AliceERC20TokenContract = artifacts.require('./helper/AliceERC20.sol')
@@ -163,46 +163,46 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
   }
 
   describe("Test the refund scenario:", () => {
-    const currentBalanceAlice = senderInitialBalance - tokenAmount;
-    const currentBalanceBob = senderInitialBalance - tokenAmount;
+    const currentBalanceAlice = senderInitialBalance - tokenAmount
+    const currentBalanceBob = senderInitialBalance - tokenAmount
 
     it('the swap is set up with 5sec timeout on both sides', async () => {
       timeLockSeconds = nowSeconds() + 3
       let newSwapTx = await newSwap(AliceERC20, htlc, {hashlock: hashPair.hash, timelock: timeLockSeconds}, Alice, Bob)
-      a2bSwapId = txContractId(newSwapTx);
+      a2bSwapId = txContractId(newSwapTx)
 
       newSwapTx = await newSwap(BobERC20, htlc, {hashlock: hashPair.hash, timelock: timeLockSeconds}, Bob, Alice)
       b2aSwapId = txContractId(newSwapTx)
 
-      await assertTokenBal(AliceERC20, htlc.address, tokenAmount);
-      await assertTokenBal(BobERC20, htlc.address, tokenAmount);
+      await assertTokenBal(AliceERC20, htlc.address, tokenAmount)
+      await assertTokenBal(BobERC20, htlc.address, tokenAmount)
 
-      await sleep(3000);
+      await sleep(3000)
 
       // after the timeout expiry Alice calls refund() to get her tokens back
       let result = await htlc.refund(a2bSwapId, {
         from: Alice
-      });
+      })
 
       // verify the event was emitted
       truffleAssert.eventEmitted(result, 'HTLCERC20Refund', ev => {
-        return ev.contractId === a2bSwapId;
-      }, `Refunded Alice`);
+        return ev.contractId === a2bSwapId
+      }, `Refunded Alice`)
 
-      await assertTokenBal(AliceERC20, Alice, currentBalanceAlice);
+      await assertTokenBal(AliceERC20, Alice, currentBalanceAlice)
 
       // Bob can also get his tokens back by calling refund()
       result = await htlc.refund(b2aSwapId, {
         from: Bob
-      });
+      })
 
       // verify the event was emitted
       truffleAssert.eventEmitted(result, 'HTLCERC20Refund', ev => {
-        return ev.contractId === b2aSwapId;
-      }, `Refunded Bob`);
+        return ev.contractId === b2aSwapId
+      }, `Refunded Bob`)
 
-      await assertTokenBal(BobERC20, Bob, currentBalanceBob);
-    });
+      await assertTokenBal(BobERC20, Bob, currentBalanceBob)
+    })
   })
 
   const newSwap = async (token, htlc, config, initiator, counterparty) => {
@@ -220,4 +220,4 @@ contract('HashedTimelock swap between two ERC20 tokens', accounts => {
       }
     )
   }
-});
+})

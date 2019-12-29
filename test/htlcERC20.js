@@ -1,4 +1,4 @@
-const {assertEqualBN} = require('./helper/assert');
+const {assertEqualBN} = require('./helper/assert')
 const {
   bufToStr,
   htlcERC20ArrayToObj,
@@ -8,7 +8,7 @@ const {
   random32,
   txContractId,
   txLoggedArgs,
-} = require('./helper/utils');
+} = require('./helper/utils')
 
 const HashedTimelockERC20 = artifacts.require('./HashedTimelockERC20.sol')
 const AliceERC20 = artifacts.require('./helper/AliceERC20.sol')
@@ -282,9 +282,9 @@ contract('HashedTimelockERC20', accounts => {
    * Helper for newContract() calls, does the ERC20 approve before calling
    */
   const newContract = async ({
-    timelock = timeLock1Hour,
-    hashlock = newSecretHashPair().hash,
-  } = {}) => {
+                               timelock = timeLock1Hour,
+                               hashlock = newSecretHashPair().hash,
+                             } = {}) => {
     await token.approve(htlc.address, tokenAmount, {from: sender})
     return htlc.newContract(
       receiver,
