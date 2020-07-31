@@ -173,7 +173,7 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.withdraw(contractId, wrongSecret, {from: receiver})
       assert.fail('expected failure due to 0 value transferred')
     } catch (err) {
-      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
+      assert.include(err.message, "hashlock hash does not match")
     }
   })
 
@@ -189,7 +189,7 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.withdraw(contractId, hashPair.secret, {from: someGuy})
       assert.fail('expected failure due to wrong receiver')
     } catch (err) {
-      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
+      assert.include(err.message, "withdrawable: not receiver")
     }
   })
 
@@ -236,26 +236,21 @@ contract('HashedTimelockERC20', accounts => {
     // wait one second so we move past the timelock time
     return new Promise((resolve, reject) =>
       setTimeout(async () => {
-        try {
-          // attempt to get the refund now we've moved past the timelock time
-          const balBefore = await token.balanceOf(sender)
-          await htlc.refund(contractId, {from: sender})
+        // attempt to get the refund now we've moved past the timelock time
+        const balBefore = await token.balanceOf(sender)
+        await htlc.refund(contractId, {from: sender})
 
-          // Check tokens returned to the sender
-          await assertTokenBal(
-            sender,
-            balBefore.add(web3.utils.toBN(tokenAmount)),
-            `sender balance unexpected`
-          )
+        // Check tokens returned to the sender
+        await assertTokenBal(
+          sender,
+          balBefore.add(web3.utils.toBN(tokenAmount)),
+          `sender balance unexpected`
+        )
 
-          const contractArr = await htlc.getContract.call(contractId)
-          const contract = htlcERC20ArrayToObj(contractArr)
-          assert.isTrue(contract.refunded)
-          assert.isFalse(contract.withdrawn)
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
+        const contractArr = await htlc.getContract.call(contractId)
+        const contract = htlcERC20ArrayToObj(contractArr)
+        assert.isTrue(contract.refunded)
+        assert.isFalse(contract.withdrawn)
       }, 2000)
     )
   })
@@ -267,8 +262,44 @@ contract('HashedTimelockERC20', accounts => {
       await htlc.refund(contractId, {from: sender})
       assert.fail('expected failure due to timelock')
     } catch (err) {
-      assert.isTrue(err.message.startsWith(REQUIRE_FAILED_MSG))
+      assert.include(err.message, "refundable: timelock not yet passed")
     }
+  })
+
+  it('withdraw() should fail after refund', async () => {
+    const hashPair1 = newSecretHashPair()
+    const hashPair2 = newSecretHashPair()
+    const curBlock = await web3.eth.getBlock('latest')
+    const timelock2Seconds = curBlock.timestamp + 2
+
+    await token.approve(htlc.address, tokenAmount * 2, {from: sender})
+    const newContractTx1 = await newContract({
+      timelock: timelock2Seconds,
+      hashlock: hashPair1.hash,
+    })
+    const contractId1 = txContractId(newContractTx1)
+    // create a second contract so there is double the tokens held by the HTLC
+    const newContractTx2 = await newContract({
+      timelock: timelock2Seconds,
+      hashlock: hashPair2.hash,
+    })
+
+    // wait one second so we move past the timelock time
+    return new Promise((resolve, reject) =>
+      setTimeout(async () => {
+        // attempt to get the refund now we've moved past the timelock time
+        await htlc.refund(contractId1, {from: sender})
+
+        // attempt to withdraw after a already refunded
+        try {
+          await htlc.withdraw(contractId1, hashPair1.secret, {from: receiver})
+          assert.fail('expected failure as already refunded')
+        } catch (err) {
+          assert.include(err.message, "withdrawable: already refunded")
+          resolve()
+        }
+      }, 2000)
+    )
   })
 
   it("getContract() returns empty record when contract doesn't exist", async () => {

@@ -248,24 +248,19 @@ contract('HashedTimelock', accounts => {
     // wait one second so we move past the timelock time
     return new Promise((resolve, reject) =>
       setTimeout(async () => {
-        try {
-          const balBefore = await getBalance(sender)
-          const refundTx = await htlc.refund(contractId, {from: sender})
-          const tx = await web3.eth.getTransaction(refundTx.tx)
-          // Check contract funds are now at the senders address
-          const expectedBal = balBefore.add(oneFinney).sub(txGas(refundTx, tx.gasPrice))
-          assertEqualBN(
-            await getBalance(sender),
-            expectedBal,
-            "sender balance doesn't match"
-          )
-          const contract = await htlc.getContract.call(contractId)
-          assert.isTrue(contract[6]) // refunded set
-          assert.isFalse(contract[5]) // withdrawn still false
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
+        const balBefore = await getBalance(sender)
+        const refundTx = await htlc.refund(contractId, {from: sender})
+        const tx = await web3.eth.getTransaction(refundTx.tx)
+        // Check contract funds are now at the senders address
+        const expectedBal = balBefore.add(oneFinney).sub(txGas(refundTx, tx.gasPrice))
+        assertEqualBN(
+          await getBalance(sender),
+          expectedBal,
+          "sender balance doesn't match"
+        )
+        const contract = await htlc.getContract.call(contractId)
+        assert.isTrue(contract[6]) // refunded set
+        assert.isFalse(contract[5]) // withdrawn still false
       }, 1000)
     )
   })
