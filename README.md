@@ -12,13 +12,14 @@
 Use these contracts for creating HTLCs on the Ethereum side of a cross chain atomic swap (for example the [xcat](https://github.com/chatch/xcat) project).
 
 ## Run Tests
-* Install truffle
-* Install ganache [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
-* Launch and set the network ID to `4447`
+* Install dependencies
+* Start [Ganache](https://www.trufflesuite.com/ganache) with network ID `4447`
+* Run the [Truffle](https://www.trufflesuite.com/truffle) tests
 
 ```
-$ npm i
-$ truffle test
+$ npm install
+$ npm run ganache-start
+$ npm run test
 Using network 'test'.
 
 Compiling ./test/helper/ASEANToken.sol...
