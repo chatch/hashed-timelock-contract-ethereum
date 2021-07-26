@@ -221,7 +221,8 @@ contract('HashedTimelockERC20', accounts => {
   //   })
   // })
 
-  it('refund() should pass after timelock expiry', async () => {
+  // Remove skip if using timelock guard (currently commented out)
+  it.skip('refund() should pass after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const curBlock = await web3.eth.getBlock('latest')
     const timelock2Seconds = curBlock.timestamp + 2
@@ -255,7 +256,8 @@ contract('HashedTimelockERC20', accounts => {
     )
   })
 
-  it('refund() should fail before the timelock expiry', async () => {
+  // Remove skip if using timelock guard (currently commented out)
+  it.skip('refund() should fail before the timelock expiry', async () => {
     const newContractTx = await newContract()
     const contractId = txContractId(newContractTx)
     try {
@@ -279,7 +281,7 @@ contract('HashedTimelockERC20', accounts => {
     })
     const contractId1 = txContractId(newContractTx1)
     // create a second contract so there is double the tokens held by the HTLC
-    const newContractTx2 = await newContract({
+    await newContract({
       timelock: timelock2Seconds,
       hashlock: hashPair2.hash,
     })

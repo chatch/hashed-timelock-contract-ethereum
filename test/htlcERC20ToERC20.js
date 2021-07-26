@@ -1,13 +1,9 @@
 const {assertEqualBN} = require('./helper/assert')
 const {
-  bufToStr,
   htlcERC20ArrayToObj,
-  isSha256Hash,
   newSecretHashPair,
   nowSeconds,
-  random32,
   txContractId,
-  txLoggedArgs,
 } = require('./helper/utils')
 const promisify = require('util').promisify
 const sleep = promisify(require('timers').setTimeout)

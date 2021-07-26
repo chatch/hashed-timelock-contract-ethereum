@@ -229,7 +229,8 @@ contract('HashedTimelock', accounts => {
     )
   })
 
-  it('refund() should pass after timelock expiry', async () => {
+  // Remove skip if using timelock guard (currently commented out)
+  it.skip('refund() should pass after timelock expiry', async () => {
     const hashPair = newSecretHashPair()
     const htlc = await HashedTimelock.new()
     const timelock1Second = nowSeconds() + 1
